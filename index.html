@@ -7,12 +7,8 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = {
-      darkMode: 'class', 
-      theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } }
-    }
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } } }
   </script>
-  
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
@@ -23,35 +19,24 @@
   <style>
     body { background-color: #f8fafc; transition: background-color 0.3s ease, color 0.3s ease; }
     body.dark { background-color: #0f172a; color: #f8fafc; }
-    
     .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
     .dark .glass { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); }
-    
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
     .fc-theme-standard th { padding: 16px 0; background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
     .dark .fc-theme-standard th { background-color: #1e293b; color: #e2e8f0; border-color: #334155; }
     .dark .fc-theme-standard td, .dark .fc-theme-standard .fc-scrollgrid { border-color: #334155; }
     .dark .fc-day-today { background-color: #334155 !important; }
     .dark .fc-col-header-cell-cushion, .dark .fc-daygrid-day-number { color: #cbd5e1; }
-    
     .fc-event { cursor: pointer; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 600; text-align: center; transition: all 0.2s; margin-bottom: 4px; padding: 4px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .fc-event:hover { transform: scale(1.02) translateY(-1px); z-index: 10; opacity: 1; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
     .fc-daygrid-event-dot { display: none; }
-
     .upload-zone { border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 3rem 1.5rem; text-align: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: #f8fafc; cursor: pointer; }
     .dark .upload-zone { border-color: #475569; background-color: #1e293b; }
     .upload-zone:hover { border-color: #3b82f6; background-color: #eff6ff; transform: translateY(-2px); }
     .dark .upload-zone:hover { border-color: #60a5fa; background-color: #0f172a; }
     .upload-zone input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
-
-    @media print {
-      body * { visibility: hidden; }
-      #ticketView, #ticketView * { visibility: visible; }
-      #ticketView { position: absolute; left: 0; top: 0; width: 100%; margin-top: 0; box-shadow: none !important; }
-      .no-print { display: none !important; }
-    }
+    @media print { body * { visibility: hidden; } #ticketView, #ticketView * { visibility: visible; } #ticketView { position: absolute; left: 0; top: 0; width: 100%; margin-top: 0; box-shadow: none !important; } .no-print { display: none !important; } }
   </style>
 </head>
 <body class="text-gray-800 antialiased selection:bg-blue-200 selection:text-blue-900">
@@ -59,7 +44,6 @@
   <nav class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm sticky top-0 z-40 no-print transition-colors duration-300 border-b border-gray-100 dark:border-gray-800">
     <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-20">
       <div class="flex flex-col md:flex-row justify-between items-center py-3 md:h-16 gap-3 md:gap-0">
-        
         <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl flex items-center justify-center text-xl font-bold shadow-lg shadow-blue-500/30">N</div>
@@ -84,30 +68,16 @@
     <div id="calendarView" class="animate-fade-in w-full">
       <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2rem] p-8 md:p-14 lg:p-16 text-white shadow-2xl shadow-blue-500/20 mb-10 flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
         <div class="absolute -right-20 -top-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="mb-6 md:mb-0 relative z-10 w-full md:w-2/3">
-          <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight leading-tight">ระบบการจองพื้นที่ส่วนกลาง NTL</h1>
-          <p class="text-blue-100 text-lg md:text-2xl font-light">จัดการการจองพื้นที่ 12APlayground และ Carnival ง่ายๆ ในที่เดียว</p>
-        </div>
+        <div class="mb-6 md:mb-0 relative z-10 w-full md:w-2/3"><h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight leading-tight">ระบบการจองพื้นที่ส่วนกลาง NTL</h1><p class="text-blue-100 text-lg md:text-2xl font-light">จัดการการจองพื้นที่ 12APlayground และ Carnival ง่ายๆ ในที่เดียว</p></div>
         <div class="text-7xl md:text-9xl drop-shadow-2xl hover:scale-110 transition-transform duration-500 cursor-default relative z-10">🏢✨</div>
       </div>
-
       <div class="bg-white dark:bg-gray-800 p-5 sm:p-10 lg:p-12 rounded-[2rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors duration-300">
-        
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-gray-100 dark:border-gray-700 pb-6">
           <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-3">
-              <h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">ภาพรวมการใช้พื้นที่</h2>
-              <span id="lastUpdatedBadge" class="hidden text-xs font-bold px-2 py-1 rounded-md shadow-sm border transition-all"></span>
-            </div>
-            <p id="lastUpdatedText" class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-              <svg class="w-4 h-4 animate-spin opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> 
-              กำลังเชื่อมต่อระบบ...
-            </p>
+            <div class="flex items-center gap-3"><h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">ภาพรวมการใช้พื้นที่</h2><span id="lastUpdatedBadge" class="hidden text-xs font-bold px-2 py-1 rounded-md shadow-sm border transition-all"></span></div>
+            <p id="lastUpdatedText" class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><svg class="w-4 h-4 animate-spin opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>กำลังเชื่อมต่อระบบ...</p>
           </div>
-          <div class="flex space-x-4 text-base bg-gray-50 dark:bg-gray-700/50 px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 transition-colors shadow-inner">
-            <div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-blue-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>Ari Hills</div>
-            <div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-orange-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>KSL Tower</div>
-          </div>
+          <div class="flex space-x-4 text-base bg-gray-50 dark:bg-gray-700/50 px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 transition-colors shadow-inner"><div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-blue-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>Ari Hills</div><div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-orange-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>KSL Tower</div></div>
         </div>
         <div id='calendar' class="dark:text-gray-200 text-lg"></div>
       </div>
@@ -187,13 +157,15 @@
         <button onclick="switchTab('Ari Hills')" id="tabAri" class="flex-1 py-5 font-bold text-blue-600 border-b-4 border-blue-600 bg-white/60 dark:bg-gray-700/60 transition-all text-xl">📍 Ari Hills</button>
         <button onclick="switchTab('KSL Tower')" id="tabKsl" class="flex-1 py-5 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white border-b-4 border-transparent transition-all text-xl">📍 KSL Tower</button>
       </div>
+      
       <div class="p-6 md:p-8 overflow-y-auto flex-1 hide-scrollbar bg-gray-50/30 dark:bg-transparent">
-        <div id="modalContent" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+        <div id="modalContent" class="flex flex-col gap-6"></div>
       </div>
     </div>
   </div>
 
   <script>
+    // ⭐️ ใส่ URL แอปที่ได้จาก Apps Script ของคุณ
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1z-ya_HeQxAvUx4wYaXwba2VEtxJZizUabpVn9pl6EBJx-G5_4ygZmUXvPdAD9Fbv/exec";
 
     let globalBookingData = [], calendar, donutChartInstance, barChartInstance, currentModalEvents = [];
@@ -233,59 +205,33 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       flatpickr("#startTime, #endTime", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, minuteIncrement: 15 });
-      
-      // ⭐️ 1. เปิดมาขึ้น Popup โหลดข้อมูลทันที
-      Swal.fire({
-        title: 'กำลังซิงค์ข้อมูล...',
-        text: 'กรุณารอสักครู่ ระบบกำลังดึงข้อมูลการจองล่าสุด',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-      });
-
-      // โหลดครั้งแรก
+      Swal.fire({ title: 'กำลังซิงค์ข้อมูล...', text: 'กรุณารอสักครู่ ระบบกำลังดึงข้อมูลการจองล่าสุด', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
       fetchData(true); 
-
-      // ⭐️ 2. ตั้งเวลารีเฟรชอัตโนมัติทุก 10 วินาที
       setInterval(() => { fetchData(false); }, 10000);
     });
 
-    // ⭐️ 3. ฟังก์ชันดึงข้อมูล (อัปเดตสถานะเงียบๆ ไม่กวนผู้ใช้)
     function fetchData(isInitialLoad = false) {
       if(!isInitialLoad) {
         const badge = document.getElementById('lastUpdatedBadge');
-        if(badge) {
-           badge.innerText = "🔄 กำลังรีเฟรช...";
-           badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-400";
-           badge.classList.remove('hidden');
-        }
+        if(badge) { badge.innerText = "🔄 กำลังรีเฟรช..."; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-400"; badge.classList.remove('hidden'); }
       }
 
       fetch(WEB_APP_URL + "?action=getBookingData")
         .then(res => res.json())
         .then(data => { 
           globalBookingData = data; 
-          
-          updateCalendarEvents(); // อัปเดตปฏิทินแบบไม่ให้กระพริบ
-          updateSummaryCards(); 
+          updateCalendarEvents(); updateSummaryCards(); 
           if (document.getElementById('analyticsView').style.display === 'block') renderCharts();
 
-          // แสดงเวลาอัปเดตล่าสุด
-          const now = new Date();
-          const timeString = now.toLocaleTimeString('th-TH', { hour12: false });
+          const now = new Date(); const timeString = now.toLocaleTimeString('th-TH', { hour12: false });
           document.getElementById('lastUpdatedText').innerHTML = `อัปเดตล่าสุด: <span class="font-bold text-gray-700 dark:text-gray-200">${timeString} น.</span>`;
 
-          if(isInitialLoad) {
-            Swal.close(); 
-          } else {
+          if(isInitialLoad) { Swal.close(); } 
+          else {
              const badge = document.getElementById('lastUpdatedBadge');
-             if(badge) {
-               badge.innerText = "✅ อัปเดตแล้ว";
-               badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400";
-               setTimeout(() => { badge.classList.add("hidden"); }, 3000);
-             }
+             if(badge) { badge.innerText = "✅ อัปเดตแล้ว"; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400"; setTimeout(() => { badge.classList.add("hidden"); }, 3000); }
           }
 
-          // อัปเดตข้อมูลใน Popup ที่กำลังเปิดค้างไว้อยู่
           if (document.getElementById('detailsModal').style.display === 'flex') {
              const activeDate = document.getElementById('modalDateTitle').innerText;
              const activeBuilding = document.getElementById('tabAri').classList.contains('text-blue-600') ? 'Ari Hills' : 'KSL Tower';
@@ -294,22 +240,14 @@
           }
         })
         .catch(err => {
-          console.error("Auto refresh failed", err);
-          if(isInitialLoad) {
-            Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณารีเฟรชหน้าเว็บ', 'error');
-          } else {
+          if(isInitialLoad) { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณารีเฟรชหน้าเว็บ', 'error'); } 
+          else {
             const badge = document.getElementById('lastUpdatedBadge');
-            if(badge) {
-               badge.innerText = "❌ ขัดข้อง";
-               badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-red-50 text-red-600 border-red-200";
-               badge.classList.remove('hidden');
-               document.getElementById('lastUpdatedText').innerHTML = "อัปเดตล่าสุด: เชื่อมต่อล้มเหลว";
-            }
+            if(badge) { badge.innerText = "❌ ขัดข้อง"; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-red-50 text-red-600 border-red-200"; badge.classList.remove('hidden'); document.getElementById('lastUpdatedText').innerHTML = "อัปเดตล่าสุด: เชื่อมต่อล้มเหลว"; }
           }
         });
     }
 
-    // ⭐️ อัปเดตปฏิทินแบบนุ่มนวล (เปลี่ยนจาก initCalendar แบบเก่า)
     function updateCalendarEvents() {
       let uniqueEvents = [], tracker = {};
       globalBookingData.forEach(item => {
@@ -318,11 +256,7 @@
           let key = isoDate + "_" + item.building;
           if (!tracker[key]) {
             tracker[key] = true;
-            uniqueEvents.push({ 
-              id: key, title: item.building, start: isoDate, allDay: true, display: 'block', 
-              color: item.building === 'Ari Hills' ? '#3b82f6' : '#f97316', 
-              textColor: '#ffffff', extendedProps: { date: item.date, building: item.building }
-            });
+            uniqueEvents.push({ id: key, title: item.building, start: isoDate, allDay: true, display: 'block', color: item.building === 'Ari Hills' ? '#3b82f6' : '#f97316', textColor: '#ffffff', extendedProps: { date: item.date, building: item.building } });
           }
         }
       });
@@ -336,9 +270,7 @@
         });
         calendar.render();
       } else {
-        // อัปเดตข้อมูลใหม่ทับของเดิมโดยไม่ทำให้ปฏิทินกระพริบ หรือรีเซ็ตเดือน
-        calendar.removeAllEvents();
-        calendar.addEventSource(uniqueEvents);
+        calendar.removeAllEvents(); calendar.addEventSource(uniqueEvents);
       }
     }
 
@@ -359,17 +291,42 @@
       const content = document.getElementById('modalContent');
       const events = currentModalEvents.filter(e => e.building === building).sort((a,b) => a.start.localeCompare(b.start));
       
-      if(events.length === 0) { content.innerHTML = `<div class="col-span-1 lg:col-span-2 text-center py-20 text-gray-400 dark:text-gray-500"><div class="text-7xl mb-6 opacity-50">🍃</div><p class="text-2xl font-medium">ไม่มีการจองในอาคารนี้</p></div>`; return; }
+      if(events.length === 0) { content.innerHTML = `<div class="text-center py-20 text-gray-400 dark:text-gray-500"><div class="text-7xl mb-6 opacity-50">🍃</div><p class="text-2xl font-medium">ไม่มีการจองในอาคารนี้</p></div>`; return; }
       
       let html = '';
       events.forEach(p => {
         let statusBadge = p.status === 'Reject' ? '<span class="bg-red-100 text-red-700 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider">Reject</span>' : '<span class="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider">Approved</span>';
         let imgBtn = p.image && p.image !== 'ไม่มีรูปภาพ' ? `<a href="${p.image}" target="_blank" class="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-gray-600 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>ดูรูปแปลน</a>` : '';
-        let actionBtns = `<div class="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">${imgBtn}<button onclick="editBooking('${p.id}')" class="flex-1 bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">✏️ แก้ไข</button><button onclick="deleteBooking('${p.id}')" class="flex-1 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">🗑️ ลบ</button></div>`;
+        
+        // ⭐️ [เพิ่มใหม่] ตรวจสอบสถานะแจ้งแม่บ้าน
+        let maidBtn = p.maidStatus === 'Notified' 
+            ? `<span class="flex-1 flex items-center justify-center gap-2 bg-green-100 text-green-700 font-bold py-3.5 rounded-xl border border-green-200 text-sm md:text-base shadow-inner">✅ แจ้งจัดพื้นที่แล้ว</span>`
+            : `<button onclick="notifyMaid('${p.id}')" class="flex-1 flex items-center justify-center gap-2 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">🧹 แจ้งจัดพื้นที่</button>`;
+
+        let actionBtns = `
+          <div class="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            ${imgBtn}
+            ${maidBtn}
+            <button onclick="editBooking('${p.id}')" class="flex-1 bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">✏️ แก้ไข</button>
+            <button onclick="deleteBooking('${p.id}')" class="flex-1 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">🗑️ ลบ</button>
+          </div>
+        `;
 
         html += `<div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 pl-6 border-l-[8px] ${building === 'Ari Hills' ? 'border-l-blue-500' : 'border-l-orange-500'} hover:shadow-md transition-all flex flex-col justify-between"><div><div class="flex justify-between items-center mb-4"><span class="text-base font-black text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl flex items-center gap-2">⏰ ${p.start} - ${p.end} น.</span>${statusBadge}</div><h4 class="font-extrabold text-2xl text-gray-800 dark:text-white mb-3 leading-snug">${p.title}</h4><p class="text-xs text-gray-400 mb-4 tracking-widest font-bold">ID: ${p.id}</p><div class="space-y-2.5 mt-2"><p class="text-base text-gray-600 dark:text-gray-300 flex items-start gap-3"><span class="opacity-70 mt-1">🛋️</span> <span><strong>รูปแบบ:</strong> ${p.layout || '-'}</span></p><p class="text-base text-gray-600 dark:text-gray-300 flex items-start gap-3"><span class="opacity-70 mt-1">👤</span> <span><strong>ติดต่อ:</strong> ${p.contact} (โทร ${p.phone || '-'})</span></p></div></div>${actionBtns}</div>`;
       });
       content.innerHTML = html;
+    }
+
+    // ⭐️ [เพิ่มใหม่] ฟังก์ชันแจ้งแม่บ้าน
+    function notifyMaid(id) {
+      Swal.fire({ title: 'กำลังแจ้งจัดพื้นที่...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'notifyMaid', ticketId: id }) })
+      .then(res => res.json()).then(res => {
+        if(res.success) {
+          Swal.fire({ title: 'สำเร็จ!', text: 'อัปเดตสถานะการจัดพื้นที่เรียบร้อยแล้ว', icon: 'success', timer: 1500, showConfirmButton: false });
+          fetchData(false); // โหลดข้อมูลใหม่เพื่ออัปเดตปุ่มทันที
+        } else { Swal.fire('ข้อผิดพลาด', res.message, 'error'); }
+      }).catch(err => Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'));
     }
 
     function editBooking(id) {
