@@ -3,409 +3,400 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NTL Space Booking</title>
+  <title>NTL ระบบจองพื้นที่ส่วนกลาง</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Prompt', 'sans-serif'] } } } }
+    tailwind.config = { 
+      darkMode: 'class', 
+      theme: { 
+        extend: { 
+          fontFamily: { sans: ['Prompt', 'sans-serif'] }
+        } 
+      } 
+    }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
-    body { background-color: #f8fafc; transition: background-color 0.3s ease, color 0.3s ease; }
-    body.dark { background-color: #0f172a; color: #f8fafc; }
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
-    .dark .glass { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .fc-theme-standard th { padding: 16px 0; background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 0.9em; }
-    .dark .fc-theme-standard th { background-color: #1e293b; color: #e2e8f0; border-color: #334155; }
-    .dark .fc-theme-standard td, .dark .fc-theme-standard .fc-scrollgrid { border-color: #334155; }
-    .dark .fc-day-today { background-color: #334155 !important; }
-    .dark .fc-col-header-cell-cushion, .dark .fc-daygrid-day-number { color: #cbd5e1; }
-    .fc-event { cursor: pointer; border: none; border-radius: 6px; font-size: 0.9em; font-weight: 600; text-align: center; transition: all 0.2s; margin-bottom: 4px; padding: 4px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .fc-event:hover { transform: scale(1.02) translateY(-1px); z-index: 10; opacity: 1; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-    .fc-daygrid-event-dot { display: none; }
-    .upload-zone { border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 3rem 1.5rem; text-align: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: #f8fafc; cursor: pointer; }
-    .dark .upload-zone { border-color: #475569; background-color: #1e293b; }
-    .upload-zone:hover { border-color: #3b82f6; background-color: #eff6ff; transform: translateY(-2px); }
-    .dark .upload-zone:hover { border-color: #60a5fa; background-color: #0f172a; }
-    .upload-zone input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
-    @media print { body * { visibility: hidden; } #ticketView, #ticketView * { visibility: visible; } #ticketView { position: absolute; left: 0; top: 0; width: 100%; margin-top: 0; box-shadow: none !important; } .no-print { display: none !important; } }
+    #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.3; pointer-events: none; }
+    body { transition: background 0.5s ease; min-height: 100vh; background-color: #f8fafc; }
+    body.dark { background-color: #020617; color: white; }
+
+    /* 📱 Dashboard Layout */
+    .dashboard-container { max-width: 1600px; margin: 0 auto; width: 100%; }
+    @media (min-width: 1280px) { .dashboard-container { aspect-ratio: 16 / 9; min-height: 850px; } }
+
+    .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); }
+    .dark .glass { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); }
+
+    /* 🌈 Calendar Styling */
+    .fc { border-radius: 2rem !important; overflow: hidden; background: white; padding: 1.5rem; border: none !important; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+    .dark .fc { background: #1e293b; color: white; border: 1px solid #334155 !important; }
+    .fc-event { border: none !important; padding: 4px 8px !important; border-radius: 8px !important; font-weight: 600; cursor: pointer; }
+    
+    /* Neon Header Colors */
+    .fc-col-header-cell.fc-day-sun { color: #ef4444; } .fc-col-header-cell.fc-day-mon { color: #eab308; }
+    .fc-col-header-cell.fc-day-tue { color: #ec4899; } .fc-col-header-cell.fc-day-wed { color: #22c55e; }
+    .fc-col-header-cell.fc-day-thu { color: #f97316; } .fc-col-header-cell.fc-day-fri { color: #3b82f6; }
+    .fc-col-header-cell.fc-day-sat { color: #a855f7; }
+
+    .nav-active { background: #3b82f6 !important; color: white !important; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+    
+    /* 🖼️ Fixed Upload Zone */
+    .upload-zone { border: 3px dashed #cbd5e1; border-radius: 2rem; position: relative; cursor: pointer; transition: 0.3s; }
+    .upload-zone:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
+    
+    .entrance-anim { animation: fadeInUp 0.6s ease-out both; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
-<body class="text-gray-800 antialiased selection:bg-blue-200 selection:text-blue-900">
+<body class="light text-slate-800 antialiased selection:bg-blue-500/20">
 
-  <nav class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm sticky top-0 z-40 no-print transition-colors duration-300 border-b border-gray-100 dark:border-gray-800">
-    <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-20">
-      <div class="flex flex-col md:flex-row justify-between items-center py-3 md:h-16 gap-3 md:gap-0">
-        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-xl flex items-center justify-center text-xl font-bold shadow-lg shadow-blue-500/30">N</div>
-            <span class="font-bold text-xl tracking-tight dark:text-white">NTL Booking</span>
-          </div>
-          <button onclick="toggleDarkMode()" id="themeToggleMobile" class="md:hidden px-2 py-2 rounded-lg text-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">🌙</button>
+  <canvas id="bg-canvas"></canvas>
+
+  <nav class="sticky top-0 z-50 no-print border-b border-slate-200/50 dark:border-white/5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl transition-all">
+    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         </div>
-        
-        <div class="flex items-center space-x-2 w-full md:w-auto overflow-x-auto hide-scrollbar pb-1 md:pb-0">
-          <a href="https://add00917-hue.github.io/GNR3-Building-MS/" target="_top" class="px-5 py-2.5 rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition whitespace-nowrap shadow-sm hover:shadow cursor-pointer">🏠 กลับเมนูหลัก</a>
-          <button onclick="switchView('calendar')" id="navCalendar" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 transition whitespace-nowrap">🗓️ ปฏิทิน</button>
-          <button onclick="switchView('analytics')" id="navAnalytics" class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition whitespace-nowrap">📊 สถิติ</button>
-          <button onclick="switchView('form')" id="navForm" class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition whitespace-nowrap">➕ จองพื้นที่</button>
-          <button onclick="toggleDarkMode()" id="themeToggleDesktop" class="hidden md:block ml-2 px-3 py-2.5 rounded-xl text-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition">🌙</button>
+        <div>
+          <h1 class="text-xl font-black tracking-tighter dark:text-white italic uppercase">NTL SPACE SYSTEM</h1>
         </div>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="flex glass p-1.5 rounded-2xl gap-1">
+          <button onclick="switchView('calendar')" id="navCalendar" class="px-5 py-2 rounded-xl text-sm font-bold nav-active transition-all">🗓️ ปฏิทิน</button>
+          <button onclick="switchView('analytics')" id="navAnalytics" class="px-5 py-2 rounded-xl text-sm font-medium dark:text-slate-400 transition-all">📊 สถิติ</button>
+          <button onclick="switchView('form')" id="navForm" class="px-5 py-2 rounded-xl text-sm font-medium dark:text-slate-400 transition-all">➕ จองใหม่</button>
+        </div>
+        <button onclick="toggleDarkMode()" id="modeToggle" class="w-11 h-11 glass rounded-xl flex items-center justify-center hover:scale-105 transition-all text-xl">🌙</button>
       </div>
     </div>
   </nav>
 
-  <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-20 py-6 md:py-10 pb-28">
+  <main class="dashboard-container px-6 py-8">
     
-    <div id="calendarView" class="animate-fade-in w-full">
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-[2rem] p-8 md:p-14 lg:p-16 text-white shadow-2xl shadow-blue-500/20 mb-10 flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
-        <div class="absolute -right-20 -top-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="mb-6 md:mb-0 relative z-10 w-full md:w-2/3"><h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight leading-tight">ระบบการจองพื้นที่ส่วนกลาง NTL</h1><p class="text-blue-100 text-lg md:text-2xl font-light">จัดการการจองพื้นที่ 12APlayground และ Carnival ง่ายๆ ในที่เดียว</p></div>
-        <div class="text-7xl md:text-9xl drop-shadow-2xl hover:scale-110 transition-transform duration-500 cursor-default relative z-10">🏢✨</div>
+    <div id="calendarView" class="h-full flex flex-col gap-6 animate-fade-in">
+      <div class="flex justify-between items-end">
+        <div class="entrance-anim">
+          <h2 class="text-4xl font-black dark:text-white tracking-tighter border-l-8 border-blue-600 pl-4">Booking Schedule</h2>
+          <p id="lastUpdatedText" class="text-slate-500 font-bold text-xs mt-2 uppercase"></p>
+        </div>
+        <div class="flex gap-3 entrance-anim">
+          <span class="glass px-4 py-2 rounded-xl text-[10px] font-black dark:text-white uppercase border-b-4 border-blue-500 shadow-sm">Ari Hills</span>
+          <span class="glass px-4 py-2 rounded-xl text-[10px] font-black dark:text-white uppercase border-b-4 border-orange-500 shadow-sm">KSL Tower</span>
+        </div>
       </div>
-      <div class="bg-white dark:bg-gray-800 p-5 sm:p-10 lg:p-12 rounded-[2rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-700 transition-colors duration-300">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 border-b border-gray-100 dark:border-gray-700 pb-6">
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-3"><h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">ภาพรวมการใช้พื้นที่</h2><span id="lastUpdatedBadge" class="hidden text-xs font-bold px-2 py-1 rounded-md shadow-sm border transition-all"></span></div>
-            <p id="lastUpdatedText" class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><svg class="w-4 h-4 animate-spin opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>กำลังเชื่อมต่อระบบ...</p>
+      <div class="flex-1 min-h-0 entrance-anim" style="animation-delay: 0.2s"><div id='calendar' class="h-full"></div></div>
+    </div>
+
+    <div id="analyticsView" class="hidden h-full flex flex-col gap-8 animate-fade-in">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div onclick="showAnalyticsDetails('Total')" class="glass p-8 rounded-[2.5rem] cursor-pointer hover:scale-[1.02] transition-all group entrance-anim">
+          <p class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">การจองเดือนนี้</p>
+          <p class="text-6xl font-black dark:text-white mt-2 group-hover:text-blue-600" id="statMonthTotal">0</p>
+        </div>
+        <div onclick="showAnalyticsDetails('Ari Hills')" class="glass p-8 rounded-[2.5rem] border-l-[10px] border-blue-600 cursor-pointer hover:scale-[1.02] transition-all entrance-anim" style="animation-delay: 0.1s">
+          <p class="text-blue-600 font-bold text-[10px] uppercase">Ari Hills</p>
+          <p class="text-6xl font-black dark:text-white mt-2" id="statMonthAri">0</p>
+        </div>
+        <div onclick="showAnalyticsDetails('KSL Tower')" class="glass p-8 rounded-[2.5rem] border-l-[10px] border-orange-500 cursor-pointer hover:scale-[1.02] transition-all entrance-anim" style="animation-delay: 0.2s">
+          <p class="text-orange-500 font-bold text-[10px] uppercase">KSL Tower</p>
+          <p class="text-6xl font-black dark:text-white mt-2" id="statMonthKsl">0</p>
+        </div>
+        <div class="glass p-8 rounded-[2.5rem] bg-blue-600/5 dark:bg-blue-600/10 entrance-anim" style="animation-delay: 0.3s">
+          <p class="text-slate-400 font-bold text-[10px] uppercase">Trend 30 Days</p>
+          <p class="text-6xl font-black text-blue-500 mt-2" id="stat30Days">0</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 flex-1 gap-8">
+        <div class="lg:col-span-2 glass p-8 rounded-[3rem] h-[400px] entrance-anim" style="animation-delay: 0.4s"><canvas id="smartBarChart"></canvas></div>
+        <div class="glass p-8 rounded-[3rem] h-[400px] flex items-center justify-center entrance-anim" style="animation-delay: 0.5s"><canvas id="smartDonutChart"></canvas></div>
+      </div>
+    </div>
+
+    <div id="formView" class="hidden h-full animate-fade-in max-w-5xl mx-auto">
+      <div class="glass p-10 md:p-16 rounded-[4rem] border-t-[12px] border-blue-600 relative overflow-hidden">
+        <h2 class="text-4xl font-black dark:text-white mb-10 tracking-tighter italic">📝 บันทึกข้อมูลการจองพื้นที่</h2>
+        
+        <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 relative z-10">
+          <div class="col-span-full bg-slate-100/50 dark:bg-white/5 p-8 rounded-3xl border dark:border-white/10" id="ticketIdContainer">
+            <label class="block text-[10px] font-black text-blue-500 mb-2 uppercase tracking-[0.2em]">Ticket ID Reference *</label>
+            <input type="text" id="ticketId" required placeholder="เช่น P26040001" class="w-full bg-transparent border-none text-4xl font-black dark:text-white focus:ring-0 placeholder:opacity-20 italic">
           </div>
-          <div class="flex space-x-4 text-base bg-gray-50 dark:bg-gray-700/50 px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-600 transition-colors shadow-inner"><div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-blue-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>Ari Hills</div><div class="flex items-center font-medium dark:text-gray-200"><span class="w-5 h-5 rounded-full bg-orange-500 mr-3 shadow-sm border-2 border-white dark:border-gray-800"></span>KSL Tower</div></div>
-        </div>
-        <div id='calendar' class="dark:text-gray-200 text-lg"></div>
-      </div>
-    </div>
+          
+          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">📍 เลือกอาคาร</label><select id="building" required class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"><option value="" disabled selected>กรุณาเลือกอาคาร...</option><option value="Ari Hills">Ari Hills</option><option value="KSL Tower">KSL Tower</option></select></div>
+          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🗓️ วันที่ใช้งาน</label><input type="text" id="bookingDate" required placeholder="คลิกเลือกจากปฏิทิน" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 dark:text-white font-black cursor-pointer"></div>
+          
+          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">⏰ เวลาเริ่ม</label><input type="text" id="startTime" required placeholder="เช่น 09:00" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border text-center font-black text-2xl dark:text-white"></div>
+          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">⏳ เวลาสิ้นสุด</label><input type="text" id="endTime" required placeholder="เช่น 12:00" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border text-center font-black text-2xl dark:text-white"></div>
 
-    <div id="analyticsView" class="space-y-10 animate-fade-in w-full" style="display: none;">
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-[2rem] p-10 lg:p-16 text-white shadow-xl shadow-purple-500/20 flex flex-col md:flex-row items-center justify-between relative overflow-hidden"><div class="absolute right-0 bottom-0 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div><div class="relative z-10 text-center md:text-left"><h1 class="text-4xl lg:text-5xl font-extrabold mb-3">สถิติและแนวโน้ม</h1><p class="text-purple-100 text-xl lg:text-2xl">ภาพรวมการใช้งานพื้นที่ทั้งหมดขององค์กร</p></div><div class="text-8xl lg:text-9xl mt-6 md:mt-0 drop-shadow-2xl relative z-10 hover:scale-110 transition">📈</div></div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white dark:bg-gray-800 p-10 rounded-[2rem] shadow-lg hover:shadow-xl transition-shadow border-l-[12px] border-indigo-500 dark:border-indigo-400 group"><p class="text-base text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">การจองทั้งหมด</p><p class="text-6xl lg:text-7xl font-black text-indigo-600 dark:text-indigo-400 mt-4 group-hover:scale-105 origin-left transition-transform" id="statTotal">0</p></div>
-        <div class="bg-white dark:bg-gray-800 p-10 rounded-[2rem] shadow-lg hover:shadow-xl transition-shadow border-l-[12px] border-blue-500 group"><p class="text-base text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">ยอดจอง Ari Hills</p><p class="text-6xl lg:text-7xl font-black text-blue-500 mt-4 group-hover:scale-105 origin-left transition-transform" id="statAri">0</p></div>
-        <div class="bg-white dark:bg-gray-800 p-10 rounded-[2rem] shadow-lg hover:shadow-xl transition-shadow border-l-[12px] border-orange-500 group"><p class="text-base text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">ยอดจอง KSL Tower</p><p class="text-6xl lg:text-7xl font-black text-orange-500 mt-4 group-hover:scale-105 origin-left transition-transform" id="statKsl">0</p></div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div class="bg-white dark:bg-gray-800 p-10 lg:p-12 rounded-[2rem] shadow-lg hover:shadow-xl transition-shadow"><h3 class="text-2xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">สัดส่วนการจองแยกอาคาร</h3><div class="relative h-[400px]"><canvas id="donutChart"></canvas></div></div>
-        <div class="bg-white dark:bg-gray-800 p-10 lg:p-12 rounded-[2rem] shadow-lg hover:shadow-xl transition-shadow"><h3 class="text-2xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100" id="barChartTitle">แนวโน้มการจองพื้นที่ (30 วันล่าสุด)</h3><div class="relative h-[400px]"><canvas id="barChart"></canvas></div></div>
-      </div>
-    </div>
+          <div class="col-span-full space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🎯 ชื่อกิจกรรม / หัวข้อประชุม</label><input type="text" id="eventName" required placeholder="เช่น NTL Culture Bootcamp Q2/2026" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border dark:text-white font-bold"></div>
+          <div class="col-span-full space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🛋️ รายละเอียดรูปแบบพื้นที่</label><textarea id="layout" rows="2" required placeholder="เช่น จัดแบบ Theater 50 ที่นั่ง, มีเครื่องเสียง..." class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border dark:text-white font-medium"></textarea></div>
 
-    <div id="formView" class="animate-fade-in w-full" style="display: none;">
-      <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 dark:shadow-none overflow-hidden flex flex-col lg:flex-row transition-colors border border-gray-100 dark:border-gray-700 min-h-[800px]">
-        <div class="lg:w-[40%] bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-16 hidden lg:flex flex-col justify-center items-center text-center border-r border-gray-100 dark:border-gray-700 relative overflow-hidden">
-          <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 dark:opacity-5"></div><div class="text-[12rem] mb-10 drop-shadow-2xl relative z-10 hover:scale-105 transition-transform duration-500">📝✨</div><h3 class="text-4xl font-extrabold text-gray-800 dark:text-white mb-6 relative z-10" id="formSideTitle">กรอกข้อมูลให้ครบถ้วน</h3><p class="text-gray-600 dark:text-gray-400 text-xl relative z-10 leading-relaxed max-w-md">ระบบจะทำการบันทึกข้อมูลและสร้าง E-Ticket สวยๆ สำหรับการจองของคุณโดยอัตโนมัติ</p>
-        </div>
-        <div class="w-full lg:w-[60%] p-8 sm:p-12 md:p-16 lg:px-24 xl:px-32 flex flex-col justify-center">
-          <div class="flex items-center gap-5 mb-10 border-b dark:border-gray-700 pb-6"><div class="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-[1.5rem] text-blue-600 dark:text-blue-400"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></div><h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white" id="formMainTitle">บันทึกการจองพื้นที่</h2></div>
-          <div class="w-full max-w-4xl mx-auto">
-            <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="space-y-8">
-              <div class="bg-blue-50 dark:bg-gray-700/50 p-8 rounded-3xl border border-blue-100 dark:border-gray-600 transition-colors" id="ticketIdContainer"><label class="block text-base font-bold mb-3 text-blue-800 dark:text-blue-300">🎟️ Ticket ID (เลขที่ระบบ) <span class="text-red-500">*</span></label><input type="text" id="ticketId" required placeholder="เช่น P26023004" class="w-full border-0 ring-1 ring-gray-300 dark:ring-gray-600 dark:bg-gray-800 dark:text-white rounded-2xl p-4 md:p-5 focus:ring-2 focus:ring-blue-500 shadow-sm text-xl font-bold transition-all"></div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">📍 อาคาร <span class="text-red-500">*</span></label><select id="building" required class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm"><option value="" disabled selected>เลือกอาคาร...</option><option value="Ari Hills">Ari Hills</option><option value="KSL Tower">KSL Tower</option></select></div><div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">🗓️ วันที่จอง <span class="text-red-500">*</span></label><input type="text" id="bookingDate" required placeholder="เช่น 27 เมษายน 2569" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm"></div>
-              </div>
-              <div class="grid grid-cols-2 gap-8">
-                <div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">⏰ เวลาเริ่ม <span class="text-red-500">*</span></label><input type="text" id="startTime" required placeholder="00:00" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg transition shadow-sm text-center font-bold"></div><div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">⏳ เวลาจบ <span class="text-red-500">*</span></label><input type="text" id="endTime" required placeholder="00:00" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg transition shadow-sm text-center font-bold"></div>
-              </div>
-              <div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">🎯 หัวข้อการจัดกิจกรรม <span class="text-red-500">*</span></label><input type="text" id="eventName" required placeholder="เช่น TIDLOR CULTURE WOW" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm"></div><div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">🛋️ รูปแบบพื้นที่/ที่นั่ง <span class="text-red-500">*</span></label><textarea id="layout" rows="4" required placeholder="เช่น Theater 25 ที่นั่ง มีโต๊ะ 5 ตัว..." class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm"></textarea></div>
-              <div class="relative">
-                <label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">🖼️ รูปประกอบแปลนพื้นที่ (ถ้ามี)</label><div class="upload-zone relative overflow-hidden group"><div class="text-6xl mb-4 text-blue-400 group-hover:scale-110 transition-transform">☁️</div><p class="text-gray-500 dark:text-gray-400 font-medium text-lg">ลากไฟล์มาวาง หรือคลิกเพื่ออัปโหลด</p><p class="text-sm text-gray-400 mt-3">รองรับไฟล์ PNG, JPG ขนาดไม่เกิน 5MB</p><div id="fileNameDisplay" class="absolute inset-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm flex flex-col items-center justify-center hidden"><div class="text-green-500 text-5xl mb-3">✅</div><p id="fileNameText" class="text-lg text-blue-600 dark:text-blue-400 font-bold px-6 text-center truncate w-full"></p></div><input type="file" id="fileUpload" accept="image/png, image/jpeg" onchange="showFileName(this)"></div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50 dark:bg-gray-700/30 p-8 rounded-3xl border border-gray-100 dark:border-gray-600">
-                <div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">👤 ผู้ประสานงาน <span class="text-red-500">*</span></label><input type="text" id="contactName" required placeholder="เช่น ฉันท์ชนิต (โบว์)" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"></div><div><label class="block text-base font-semibold mb-3 text-gray-700 dark:text-gray-300">📞 เบอร์ติดต่อ <span class="text-red-500">*</span></label><input type="text" id="contactPhone" required placeholder="เช่น 5052" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-2xl p-4 md:p-5 text-lg focus:ring-2 focus:ring-blue-500 shadow-sm bg-white"></div>
-              </div>
-              <div class="flex gap-4">
-                <button type="button" id="cancelEditBtn" onclick="resetFormToCreate()" class="hidden w-1/3 bg-gray-200 text-gray-700 font-extrabold text-xl py-6 rounded-2xl hover:bg-gray-300 transition-all duration-300">ยกเลิก</button>
-                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold text-2xl py-6 rounded-2xl hover:from-blue-700 hover:to-indigo-700 shadow-xl shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-1 mt-10">ยืนยันการจองพื้นที่</button>
-              </div>
-            </form>
+          <div class="col-span-full">
+            <label class="font-bold text-slate-500 ml-1 text-xs uppercase block mb-2">🖼️ แผนผังการจัดพื้นที่ (JPG/PNG)</label>
+            <div onclick="document.getElementById('fileUpload').click()" class="upload-zone p-8 text-center bg-white/40 dark:bg-slate-900/40">
+              <span class="text-3xl block mb-2">📁</span>
+              <p class="text-slate-400 font-bold text-sm">คลิกเพื่อเลือกไฟล์รูปภาพแปลน</p>
+              <input type="file" id="fileUpload" accept="image/*" onchange="showFileName(this)" class="hidden">
+              <div id="fileNameDisplay" class="hidden mt-4 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-100">✅ <span id="fileNameText"></span></div>
+            </div>
           </div>
-        </div>
+
+          <div class="col-span-1 space-y-1"><label class="font-bold text-slate-500 text-[10px] uppercase">👤 ผู้ติดต่อ</label><input type="text" id="contactName" required placeholder="คุณเบียร์ (สถาพร)" class="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border"></div>
+          <div class="col-span-1 space-y-1"><label class="font-bold text-slate-500 text-[10px] uppercase">📞 เบอร์โทร</label><input type="text" id="contactPhone" required placeholder="08x-xxx-xxxx" class="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border"></div>
+
+          <div class="col-span-full pt-8">
+            <button type="submit" id="submitBtn" class="w-full py-7 bg-blue-600 text-white rounded-[2.5rem] font-black text-2xl shadow-2xl shadow-blue-500/40 hover:scale-[1.01] active:scale-95 transition-all italic uppercase">CONFIRM BOOKING 🚀</button>
+            <button type="button" id="cancelEditBtn" onclick="resetFormToCreate()" class="hidden w-full mt-4 text-slate-400 font-bold">ยกเลิกการแก้ไข</button>
+          </div>
+        </form>
       </div>
     </div>
+  </main>
 
-    <div id="ticketView" class="max-w-md mx-auto mt-6 animate-fade-in" style="display: none;">
-      <div class="text-center mb-8 no-print"><div class="text-7xl mb-4 animate-bounce">🎉</div><h2 class="text-3xl font-black text-gray-800 dark:text-white tracking-tight" id="ticketTitleText">จองพื้นที่สำเร็จ!</h2></div>
-      <div class="bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-gray-200 relative print:shadow-none">
-        <div class="bg-gradient-to-r from-gray-900 via-gray-800 to-black p-8 text-center text-white relative"><div class="absolute -bottom-5 -left-5 w-10 h-10 bg-gray-100 dark:bg-gray-900 rounded-full shadow-inner print:hidden"></div><div class="absolute -bottom-5 -right-5 w-10 h-10 bg-gray-100 dark:bg-gray-900 rounded-full shadow-inner print:hidden"></div><div class="flex justify-between items-center mb-2 opacity-80"><span class="text-xs tracking-widest uppercase font-bold">Boarding Pass</span><span class="text-xs">NTL Space Booking</span></div><h2 class="text-4xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mt-2" id="t_id">PXXXXXX</h2></div>
-        <div class="p-8 bg-white text-gray-800 relative border-b-2 border-dashed border-gray-300"><div class="space-y-6"><div class="bg-gray-50 rounded-xl p-4 border border-gray-100"><p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">📍 สถานที่ (Building)</p><p class="font-black text-xl text-blue-700" id="t_bld">-</p></div><div class="grid grid-cols-2 gap-4"><div class="bg-gray-50 rounded-xl p-4 border border-gray-100"><p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">🗓️ วันที่ (Date)</p><p class="font-bold text-lg" id="t_date">-</p></div><div class="bg-gray-50 rounded-xl p-4 border border-gray-100"><p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">⏰ เวลา (Time)</p><p class="font-bold text-lg" id="t_time">-</p></div></div><div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">🎯 กิจกรรม (Event)</p><p class="font-bold text-lg border-b border-gray-100 pb-2" id="t_event">-</p></div></div><div class="mt-8 text-center opacity-40 select-none"><div class="h-10 w-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPgo8cGF0aCBkPSJNMTAgMFYxMDBNMjAgMFYxMDBNMjUgMFYxMDBNMzUgMFYxMDBNNDUgMFYxMDBNNTAgMFYxMDBNNjAgMFYxMDBNNjUgMFYxMDBNNzUgMFYxMDBNODYgMFYxMDBNOTIgMFYxMDBNOTggMFYxMDAiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==')] bg-repeat-x"></div></div></div>
-        <div class="p-6 bg-gray-50 text-center space-y-3 no-print">
-          <button onclick="window.print()" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-black shadow-lg hover:shadow-xl transition-all flex justify-center items-center gap-2 text-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>พิมพ์ตั๋ว / บันทึก PDF</button>
-          <button onclick="window.location.reload()" class="w-full bg-white border-2 border-gray-200 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all text-lg">กลับหน้าหลัก</button>
-        </div>
+  <div id="detailsModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onclick="closeModal()"></div>
+    <div class="glass w-full max-w-6xl rounded-[3.5rem] shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden border-8 border-white dark:border-slate-800 animate-fade-in">
+      <div class="p-8 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+        <div><h3 class="text-3xl font-black dark:text-white italic tracking-tighter"><span id="modalDateTitle" class="text-blue-600 font-black">รายละเอียด</span></h3></div>
+        <button onclick="closeModal()" class="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-red-500 flex items-center justify-center text-4xl transition-all">&times;</button>
       </div>
-    </div>
-  </div>
-
-  <button onclick="switchView('form')" id="fabBtn" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full px-8 py-5 shadow-2xl hover:shadow-blue-500/50 transition duration-300 transform hover:scale-105 hover:-translate-y-2 z-40 font-bold flex items-center gap-2 no-print">
-    <span class="text-3xl leading-none">+</span> <span class="hidden sm:inline text-xl">จองพื้นที่</span>
-  </button>
-
-  <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 lg:p-10">
-    <div class="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-    <div class="glass w-full max-w-5xl rounded-[2rem] shadow-2xl relative flex flex-col max-h-[90vh] md:max-h-[85vh] animate-fade-in overflow-hidden">
-      <div class="p-6 md:p-8 border-b border-gray-200/40 flex justify-between items-center bg-white/40 dark:bg-gray-800/40">
-        <h3 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">🗓️ <span id="modalDateTitle" class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400"></span></h3>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 text-5xl leading-none transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 w-12 h-12 flex items-center justify-center">&times;</button>
+      <div class="flex border-b text-lg font-black bg-white dark:bg-slate-900">
+        <button onclick="switchTab('Ari Hills')" id="tabAri" class="flex-1 py-6 border-b-8 border-blue-600 text-blue-600 bg-blue-50/20 transition-all font-black">📍 ARI HILLS</button>
+        <button onclick="switchTab('KSL Tower')" id="tabKsl" class="flex-1 py-6 border-b-8 border-transparent text-slate-400 transition-all font-bold">📍 KSL TOWER</button>
       </div>
-      <div class="flex border-b border-gray-200/40 bg-gray-50/50 dark:bg-gray-800/80">
-        <button onclick="switchTab('Ari Hills')" id="tabAri" class="flex-1 py-5 font-bold text-blue-600 border-b-4 border-blue-600 bg-white/60 dark:bg-gray-700/60 transition-all text-xl">📍 Ari Hills</button>
-        <button onclick="switchTab('KSL Tower')" id="tabKsl" class="flex-1 py-5 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white border-b-4 border-transparent transition-all text-xl">📍 KSL Tower</button>
-      </div>
-      
-      <div class="p-6 md:p-8 overflow-y-auto flex-1 hide-scrollbar bg-gray-50/30 dark:bg-transparent">
-        <div id="modalContent" class="flex flex-col gap-6"></div>
-      </div>
+      <div id="modalContent" class="p-8 overflow-y-auto space-y-8 flex-1 hide-scrollbar bg-slate-50/50 dark:bg-slate-900/50 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"></div>
     </div>
   </div>
 
   <script>
-    // ⭐️ ใส่ URL แอปที่ได้จาก Apps Script ของคุณ
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz1z-ya_HeQxAvUx4wYaXwba2VEtxJZizUabpVn9pl6EBJx-G5_4ygZmUXvPdAD9Fbv/exec";
 
     let globalBookingData = [], calendar, donutChartInstance, barChartInstance, currentModalEvents = [];
-    window.currentAction = 'create';
-    window.currentOldImage = '';
+    window.currentAction = 'create'; window.currentOldImage = '';
+
+    // 🎨 IT Background Animation
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let points = [];
+    function initCanvas() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        points = [];
+        for(let i=0; i<60; i++) points.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const isDark = document.body.classList.contains('dark');
+        ctx.strokeStyle = isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)';
+        ctx.lineWidth = 1;
+        points.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            points.slice(i+1).forEach(p2 => {
+                let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                if(dist < 200) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+            });
+        });
+        requestAnimationFrame(draw);
+    }
+    window.addEventListener('resize', initCanvas); initCanvas(); draw();
 
     function toggleDarkMode() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      document.getElementById('themeToggleDesktop').innerText = isDark ? '☀️' : '🌙';
-      document.getElementById('themeToggleMobile').innerText = isDark ? '☀️' : '🌙';
-      if(calendar) calendar.render(); if(document.getElementById('analyticsView').style.display === 'block') renderCharts(); 
+      const isDark = document.body.classList.toggle('dark');
+      document.body.classList.toggle('light', !isDark);
+      document.documentElement.classList.toggle('dark', isDark);
+      document.getElementById('modeToggle').innerHTML = isDark ? '☀️' : '🌙';
+      if(calendar) calendar.render();
+      if(barChartInstance) renderCharts();
     }
 
     function switchView(view) {
-      const views = ['calendarView', 'analyticsView', 'formView', 'ticketView'];
-      const navs = ['navCalendar', 'navAnalytics', 'navForm'];
-      views.forEach(v => document.getElementById(v).style.display = 'none');
-      navs.forEach(n => document.getElementById(n).className = "px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition whitespace-nowrap");
-      document.getElementById('fabBtn').style.display = (view === 'form' || view === 'ticket') ? 'none' : 'flex';
-
-      if (view === 'calendar') { document.getElementById('calendarView').style.display = 'block'; document.getElementById('navCalendar').className = "px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 transition whitespace-nowrap"; if(calendar) calendar.render(); }
-      else if (view === 'analytics') { document.getElementById('analyticsView').style.display = 'block'; document.getElementById('navAnalytics').className = "px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 transition whitespace-nowrap"; renderCharts(); }
-      else if (view === 'form') { if (window.currentAction === 'create') resetFormToCreate(); document.getElementById('formView').style.display = 'block'; document.getElementById('navForm').className = "px-5 py-2.5 rounded-xl text-sm font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 transition whitespace-nowrap"; }
-      else if (view === 'ticket') { document.getElementById('ticketView').style.display = 'block'; }
+      ['calendarView', 'analyticsView', 'formView'].forEach(v => document.getElementById(v).classList.add('hidden'));
+      document.getElementById(view + 'View').classList.remove('hidden');
+      const navs = { calendar: 'navCalendar', analytics: 'navAnalytics', form: 'navForm' };
+      Object.values(navs).forEach(id => document.getElementById(id).className = "px-5 py-2 rounded-xl text-sm font-medium text-slate-400 dark:text-slate-500 cursor-pointer transition-all");
+      if(navs[view]) document.getElementById(navs[view]).className = "px-5 py-2 rounded-xl text-sm font-bold nav-active cursor-pointer";
+      if(view === 'calendar' && calendar) { setTimeout(() => calendar.render(), 100); }
+      if(view === 'analytics') renderCharts();
     }
 
-    function showFileName(input) {
-      const display = document.getElementById('fileNameDisplay'), text = document.getElementById('fileNameText');
-      if(input.files && input.files.length > 0) { text.innerText = "ไฟล์ที่เลือก: " + input.files[0].name; display.classList.remove('hidden'); } 
-      else { display.classList.add('hidden'); }
+    function showAnalyticsDetails(filter) {
+        const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
+        let filteredData = globalBookingData.filter(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return false;
+            let date = new Date(iso); return date.getMonth() === m && date.getFullYear() === y;
+        });
+        if (filter !== 'Total') filteredData = filteredData.filter(d => d.building === filter);
+        if (filteredData.length === 0) { Swal.fire('No Records', 'ไม่พบข้อมูลการจองในเดือนนี้', 'info'); return; }
+        document.getElementById('modalDateTitle').innerText = filter === 'Total' ? "Summary ประจำเดือน" : "Building: " + filter;
+        currentModalEvents = filteredData;
+        document.getElementById('detailsModal').classList.remove('hidden');
+        switchTab(filter === 'Total' ? 'Ari Hills' : filter);
     }
-
-    function parseThaiDate(thaiDateStr) {
-      const months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-      try { let parts = thaiDateStr.trim().split(' '); let d = parts[0].padStart(2, '0'); let m = (months.indexOf(parts[1]) + 1).toString().padStart(2, '0'); let y = parseInt(parts[2]) - 543; return `${y}-${m}-${d}`; } catch(e) { return null; }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      flatpickr("#startTime, #endTime", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, minuteIncrement: 15 });
-      Swal.fire({ title: 'กำลังซิงค์ข้อมูล...', text: 'กรุณารอสักครู่ ระบบกำลังดึงข้อมูลการจองล่าสุด', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-      fetchData(true); 
-      setInterval(() => { fetchData(false); }, 10000);
-    });
 
     function fetchData(isInitialLoad = false) {
-      if(!isInitialLoad) {
-        const badge = document.getElementById('lastUpdatedBadge');
-        if(badge) { badge.innerText = "🔄 กำลังรีเฟรช..."; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/30 dark:border-yellow-800 dark:text-yellow-400"; badge.classList.remove('hidden'); }
-      }
-
-      fetch(WEB_APP_URL + "?action=getBookingData")
-        .then(res => res.json())
-        .then(data => { 
-          globalBookingData = data; 
-          updateCalendarEvents(); updateSummaryCards(); 
-          if (document.getElementById('analyticsView').style.display === 'block') renderCharts();
-
-          const now = new Date(); const timeString = now.toLocaleTimeString('th-TH', { hour12: false });
-          document.getElementById('lastUpdatedText').innerHTML = `อัปเดตล่าสุด: <span class="font-bold text-gray-700 dark:text-gray-200">${timeString} น.</span>`;
-
-          if(isInitialLoad) { Swal.close(); } 
-          else {
-             const badge = document.getElementById('lastUpdatedBadge');
-             if(badge) { badge.innerText = "✅ อัปเดตแล้ว"; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400"; setTimeout(() => { badge.classList.add("hidden"); }, 3000); }
-          }
-
-          if (document.getElementById('detailsModal').style.display === 'flex') {
-             const activeDate = document.getElementById('modalDateTitle').innerText;
-             const activeBuilding = document.getElementById('tabAri').classList.contains('text-blue-600') ? 'Ari Hills' : 'KSL Tower';
-             currentModalEvents = globalBookingData.filter(d => d.date === activeDate);
-             switchTab(activeBuilding);
-          }
-        })
-        .catch(err => {
-          if(isInitialLoad) { Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณารีเฟรชหน้าเว็บ', 'error'); } 
-          else {
-            const badge = document.getElementById('lastUpdatedBadge');
-            if(badge) { badge.innerText = "❌ ขัดข้อง"; badge.className = "text-xs font-bold px-2 py-1 rounded-md shadow-sm border bg-red-50 text-red-600 border-red-200"; badge.classList.remove('hidden'); document.getElementById('lastUpdatedText').innerHTML = "อัปเดตล่าสุด: เชื่อมต่อล้มเหลว"; }
-          }
-        });
+      fetch(WEB_APP_URL + "?action=getBookingData").then(res => res.json()).then(data => {
+        globalBookingData = data; updateCalendar();
+        document.getElementById('lastUpdatedText').innerHTML = "SYSTEM READY: " + new Date().toLocaleTimeString('th-TH');
+        if(isInitialLoad) Swal.close();
+      });
     }
 
-    function updateCalendarEvents() {
-      let uniqueEvents = [], tracker = {};
-      globalBookingData.forEach(item => {
-        let isoDate = parseThaiDate(item.date);
-        if (isoDate) {
-          let key = isoDate + "_" + item.building;
-          if (!tracker[key]) {
-            tracker[key] = true;
-            uniqueEvents.push({ id: key, title: item.building, start: isoDate, allDay: true, display: 'block', color: item.building === 'Ari Hills' ? '#3b82f6' : '#f97316', textColor: '#ffffff', extendedProps: { date: item.date, building: item.building } });
-          }
+    function updateCalendar() {
+      let events = [];
+      globalBookingData.forEach(d => {
+        let iso = parseThaiDate(d.date);
+        if(iso) { 
+          let title = d.building;
+          if(d.image && d.image.startsWith("http")) title += " [🖼️ แปลนภาพ]";
+          events.push({ 
+            title: title, start: iso, allDay: true, 
+            color: d.building === 'Ari Hills' ? '#3b82f6' : '#f97316',
+            extendedProps: { date: d.date, building: d.building } 
+          }); 
         }
       });
-      
-      if (!calendar) {
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-          initialView: 'dayGridMonth', locale: 'th', height: 'auto', contentHeight: 'auto', 
-          headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, 
-          displayEventTime: false, events: uniqueEvents, 
-          eventClick: function(info) { openDailyModal(info.event.extendedProps.date, info.event.extendedProps.building); } 
-        });
-        calendar.render();
-      } else {
-        calendar.removeAllEvents(); calendar.addEventSource(uniqueEvents);
-      }
+      calendar.removeAllEvents(); calendar.addEventSource(events);
     }
-
-    function openDailyModal(thaiDate, selectedBuilding) {
-      document.getElementById('modalDateTitle').innerText = thaiDate;
-      currentModalEvents = globalBookingData.filter(d => d.date === thaiDate);
-      document.getElementById('detailsModal').style.display = 'flex';
-      switchTab(selectedBuilding); 
-    }
-
-    function closeModal() { document.getElementById('detailsModal').style.display = 'none'; }
 
     function switchTab(building) {
-      const tabAri = document.getElementById('tabAri'), tabKsl = document.getElementById('tabKsl');
-      if(building === 'Ari Hills') { tabAri.className = "flex-1 py-5 font-bold text-blue-600 border-b-4 border-blue-600 bg-white/60 dark:bg-gray-700/60 transition-all text-xl"; tabKsl.className = "flex-1 py-5 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white border-b-4 border-transparent transition-all text-xl"; } 
-      else { tabKsl.className = "flex-1 py-5 font-bold text-orange-500 border-b-4 border-orange-500 bg-white/60 dark:bg-gray-700/60 transition-all text-xl"; tabAri.className = "flex-1 py-5 font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white border-b-4 border-transparent transition-all text-xl"; }
-      
+      const isAri = building === 'Ari Hills';
+      document.getElementById('tabAri').className = isAri ? "flex-1 py-6 border-b-8 border-blue-600 text-blue-600 bg-blue-50/30 transition-all font-black" : "flex-1 py-6 border-b-8 border-transparent text-slate-400 hover:bg-slate-100 transition-all font-bold";
+      document.getElementById('tabKsl').className = !isAri ? "flex-1 py-6 border-b-8 border-orange-500 text-orange-600 bg-orange-50/30 transition-all font-black" : "flex-1 py-6 border-b-8 border-transparent text-slate-400 hover:bg-slate-100 transition-all font-bold";
       const content = document.getElementById('modalContent');
       const events = currentModalEvents.filter(e => e.building === building).sort((a,b) => a.start.localeCompare(b.start));
-      
-      if(events.length === 0) { content.innerHTML = `<div class="text-center py-20 text-gray-400 dark:text-gray-500"><div class="text-7xl mb-6 opacity-50">🍃</div><p class="text-2xl font-medium">ไม่มีการจองในอาคารนี้</p></div>`; return; }
-      
-      let html = '';
-      events.forEach(p => {
-        let statusBadge = p.status === 'Reject' ? '<span class="bg-red-100 text-red-700 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider">Reject</span>' : '<span class="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-wider">Approved</span>';
-        let imgBtn = p.image && p.image !== 'ไม่มีรูปภาพ' ? `<a href="${p.image}" target="_blank" class="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-gray-600 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-gray-600 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>ดูรูปแปลน</a>` : '';
-        
-        // ⭐️ [เพิ่มใหม่] ตรวจสอบสถานะแจ้งแม่บ้าน
-        let maidBtn = p.maidStatus === 'Notified' 
-            ? `<span class="flex-1 flex items-center justify-center gap-2 bg-green-100 text-green-700 font-bold py-3.5 rounded-xl border border-green-200 text-sm md:text-base shadow-inner">✅ แจ้งจัดพื้นที่แล้ว</span>`
-            : `<button onclick="notifyMaid('${p.id}')" class="flex-1 flex items-center justify-center gap-2 bg-cyan-50 dark:bg-cyan-900/30 hover:bg-cyan-100 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">🧹 แจ้งจัดพื้นที่</button>`;
+      if(events.length === 0) { content.innerHTML = `<div class="col-span-full text-center py-20 opacity-20 text-2xl font-black italic">🍃 NO DATA RECORDED</div>`; return; }
 
-        let actionBtns = `
-          <div class="flex gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-            ${imgBtn}
-            ${maidBtn}
-            <button onclick="editBooking('${p.id}')" class="flex-1 bg-yellow-50 dark:bg-yellow-900/30 hover:bg-yellow-100 text-yellow-700 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">✏️ แก้ไข</button>
-            <button onclick="deleteBooking('${p.id}')" class="flex-1 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700 font-bold py-3.5 rounded-xl transition-all text-sm md:text-base">🗑️ ลบ</button>
+      content.innerHTML = events.map(p => {
+        const hasImg = p.image && p.image.startsWith("http");
+        return `
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-sm border border-slate-100 dark:border-white/5 relative group hover:shadow-xl transition-all">
+          <div class="flex justify-between items-center mb-6">
+            <span class="bg-slate-100 dark:bg-slate-900 dark:text-white px-5 py-2.5 rounded-2xl font-black italic text-lg tracking-tighter">⏰ ${p.start} - ${p.end}</span>
+            <span class="text-[10px] font-black uppercase text-blue-500 border-2 border-blue-100 px-2 py-1 rounded-md">${p.status}</span>
           </div>
-        `;
-
-        html += `<div class="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 pl-6 border-l-[8px] ${building === 'Ari Hills' ? 'border-l-blue-500' : 'border-l-orange-500'} hover:shadow-md transition-all flex flex-col justify-between"><div><div class="flex justify-between items-center mb-4"><span class="text-base font-black text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-xl flex items-center gap-2">⏰ ${p.start} - ${p.end} น.</span>${statusBadge}</div><h4 class="font-extrabold text-2xl text-gray-800 dark:text-white mb-3 leading-snug">${p.title}</h4><p class="text-xs text-gray-400 mb-4 tracking-widest font-bold">ID: ${p.id}</p><div class="space-y-2.5 mt-2"><p class="text-base text-gray-600 dark:text-gray-300 flex items-start gap-3"><span class="opacity-70 mt-1">🛋️</span> <span><strong>รูปแบบ:</strong> ${p.layout || '-'}</span></p><p class="text-base text-gray-600 dark:text-gray-300 flex items-start gap-3"><span class="opacity-70 mt-1">👤</span> <span><strong>ติดต่อ:</strong> ${p.contact} (โทร ${p.phone || '-'})</span></p></div></div>${actionBtns}</div>`;
-      });
-      content.innerHTML = html;
-    }
-
-    // ⭐️ [เพิ่มใหม่] ฟังก์ชันแจ้งแม่บ้าน
-    function notifyMaid(id) {
-      Swal.fire({ title: 'กำลังแจ้งจัดพื้นที่...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'notifyMaid', ticketId: id }) })
-      .then(res => res.json()).then(res => {
-        if(res.success) {
-          Swal.fire({ title: 'สำเร็จ!', text: 'อัปเดตสถานะการจัดพื้นที่เรียบร้อยแล้ว', icon: 'success', timer: 1500, showConfirmButton: false });
-          fetchData(false); // โหลดข้อมูลใหม่เพื่ออัปเดตปุ่มทันที
-        } else { Swal.fire('ข้อผิดพลาด', res.message, 'error'); }
-      }).catch(err => Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'));
-    }
-
-    function editBooking(id) {
-      const b = globalBookingData.find(x => x.id === id);
-      if(!b) return;
-      closeModal();
-      document.getElementById('ticketId').value = b.id; document.getElementById('ticketId').readOnly = true; document.getElementById('ticketIdContainer').classList.add('opacity-60', 'pointer-events-none');
-      document.getElementById('building').value = b.building; document.getElementById('bookingDate').value = b.date; document.getElementById('startTime').value = b.start; document.getElementById('endTime').value = b.end; document.getElementById('eventName').value = b.title; document.getElementById('layout').value = b.layout; document.getElementById('contactName').value = b.contact; document.getElementById('contactPhone').value = b.phone || '';
-      window.currentAction = 'update'; window.currentOldImage = b.image;
-      document.getElementById('formMainTitle').innerText = "แก้ไขข้อมูลการจอง"; document.getElementById('formSideTitle').innerText = "แก้ไขข้อมูลให้ถูกต้อง";
-      const submitBtn = document.getElementById('submitBtn'); submitBtn.innerHTML = "💾 บันทึกการอัปเดต"; submitBtn.classList.replace('from-blue-600', 'from-amber-500'); submitBtn.classList.replace('to-indigo-600', 'to-orange-500');
-      document.getElementById('cancelEditBtn').classList.remove('hidden');
-      switchView('form');
-    }
-
-    function resetFormToCreate() {
-      document.getElementById('bookingForm').reset(); document.getElementById('fileNameDisplay').classList.add('hidden');
-      document.getElementById('ticketId').readOnly = false; document.getElementById('ticketIdContainer').classList.remove('opacity-60', 'pointer-events-none');
-      window.currentAction = 'create'; window.currentOldImage = '';
-      document.getElementById('formMainTitle').innerText = "บันทึกการจองพื้นที่"; document.getElementById('formSideTitle').innerText = "กรอกข้อมูลให้ครบถ้วน";
-      const submitBtn = document.getElementById('submitBtn'); submitBtn.innerHTML = "ยืนยันการจองพื้นที่"; submitBtn.classList.replace('from-amber-500', 'from-blue-600'); submitBtn.classList.replace('to-orange-500', 'to-indigo-600');
-      document.getElementById('cancelEditBtn').classList.add('hidden');
-    }
-
-    function deleteBooking(id) {
-      Swal.fire({ title: 'ยืนยันการยกเลิก?', text: `คุณต้องการลบ/ยกเลิกรายการจองรหัส ${id} ใช่หรือไม่?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#94a3b8', confirmButtonText: 'ใช่, ลบเลย!', cancelButtonText: 'ยกเลิก' })
-      .then((result) => {
-        if (result.isConfirmed) {
-          Swal.fire({title: 'กำลังดำเนินการ...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-          fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', ticketId: id }) }).then(res => res.json()).then(res => {
-            if(res.success) { Swal.fire('สำเร็จ!', 'รายการนี้ถูกยกเลิกแล้ว', 'success'); closeModal(); fetchData(); } 
-            else { Swal.fire('ข้อผิดพลาด', res.message, 'error'); }
-          }).catch(err => Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'));
-        }
-      });
-    }
-
-    function updateSummaryCards() {
-      let ari = 0, ksl = 0; globalBookingData.forEach(d => { if(d.building === 'Ari Hills') ari++; if(d.building === 'KSL Tower') ksl++; });
-      document.getElementById('statTotal').innerText = globalBookingData.length; document.getElementById('statAri').innerText = ari; document.getElementById('statKsl').innerText = ksl;
+          <h4 class="font-black text-2xl text-slate-900 dark:text-white mb-4 leading-tight">${p.title}</h4>
+          <p class="text-slate-500 dark:text-slate-400 font-bold text-sm mb-8 leading-relaxed">${p.layout}</p>
+          <div class="grid grid-cols-2 gap-3">
+            ${hasImg ? `<a href="${p.image}" target="_blank" class="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-center py-4 rounded-2xl font-black text-xs">VIEW PLAN</a>` : ''}
+            <button onclick="editBooking('${p.id}')" class="bg-yellow-50 dark:bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 py-4 rounded-2xl font-black text-xs">EDIT</button>
+            <button onclick="deleteBooking('${p.id}')" class="bg-red-50 dark:bg-red-400/10 text-red-600 dark:text-red-400 py-4 rounded-2xl font-black text-xs">DELETE</button>
+            <div id="maid-btn-area-${p.id}" class="col-span-full mt-2">
+              ${p.maidStatus === 'Notified' 
+                ? `<span class="w-full flex items-center justify-center bg-emerald-100 text-emerald-700 py-4 rounded-2xl font-black text-xs uppercase">Notified ✅</span>`
+                : `<button onclick="notifyMaid('${p.id}')" class="w-full bg-slate-900 dark:bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Notify Maid 🧹</button>`}
+            </div>
+          </div>
+        </div>`;
+      }).join('');
     }
 
     function renderCharts() {
-      let ari = 0, ksl = 0; let dateCounts = {};
-      globalBookingData.forEach(d => { 
-        if(d.building === 'Ari Hills') ari++; if(d.building === 'KSL Tower') ksl++; 
-        let isoDate = parseThaiDate(d.date); if(isoDate) { dateCounts[isoDate] = (dateCounts[isoDate] || 0) + 1; }
+      const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
+      const isDark = document.body.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const thisMonthEvents = globalBookingData.filter(d => {
+        let iso = parseThaiDate(d.date); if(!iso) return false;
+        let eventDate = new Date(iso); return eventDate.getMonth() === m && eventDate.getFullYear() === y;
       });
-      const isDark = document.documentElement.classList.contains('dark');
-      Chart.defaults.color = isDark ? '#cbd5e1' : '#475569'; Chart.defaults.font.family = 'Prompt';
-      
-      if(donutChartInstance) donutChartInstance.destroy();
-      donutChartInstance = new Chart(document.getElementById('donutChart'), { type: 'doughnut', data: { labels: ['Ari Hills', 'KSL Tower'], datasets: [{ data: [ari, ksl], backgroundColor: ['#3b82f6', '#f97316'], borderWidth: 0, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { padding: 25, font: { size: 16 } } } } } });
+      const ariMonth = thisMonthEvents.filter(d => d.building === 'Ari Hills').length;
+      const kslMonth = thisMonthEvents.filter(d => d.building === 'KSL Tower').length;
+      let dateCounts = {}; let thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(now.getDate() - 30);
+      globalBookingData.forEach(d => {
+        let iso = parseThaiDate(d.date); if(!iso) return;
+        let eventDate = new Date(iso); if(eventDate >= thirtyDaysAgo && eventDate <= now) {
+            let dateKey = eventDate.toISOString().split('T')[0]; dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1;
+        }
+      });
+      document.getElementById('statMonthTotal').innerText = thisMonthEvents.length;
+      document.getElementById('statMonthAri').innerText = ariMonth;
+      document.getElementById('statMonthKsl').innerText = kslMonth;
+      document.getElementById('stat30Days').innerText = thisMonthEvents.length;
 
-      let sortedDates = Object.keys(dateCounts).sort(); if (sortedDates.length > 30) sortedDates = sortedDates.slice(-30);
-      let displayLabels = sortedDates.map(dateStr => { let d = new Date(dateStr); return `${d.getDate()}/${d.getMonth()+1}`; });
-      let dateData = sortedDates.map(date => dateCounts[date]);
+      if(donutChartInstance) donutChartInstance.destroy();
+      donutChartInstance = new Chart(document.getElementById('smartDonutChart').getContext('2d'), {
+        type: 'doughnut', data: { labels: ['Ari Hills', 'KSL Tower'], datasets: [{ data: [ariMonth, kslMonth], backgroundColor: ['#3b82f6', '#f97316'], borderWeight: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '85%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Prompt', weight: 'bold' } } } } }
+      });
 
       if(barChartInstance) barChartInstance.destroy();
-      barChartInstance = new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels: displayLabels, datasets: [{ label: 'จำนวนการจอง (ครั้ง)', data: dateData, backgroundColor: 'rgba(99, 102, 241, 0.8)', hoverBackgroundColor: '#4f46e5', borderRadius: 8, barThickness: 'flex', maxBarThickness: 50 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 14 } }, grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } }, x: { ticks: { font: { size: 14 } }, grid: { display: false } } } } });
+      let sortedDates = Object.keys(dateCounts).sort();
+      barChartInstance = new Chart(document.getElementById('smartBarChart').getContext('2d'), {
+        type: 'line', data: { labels: sortedDates.map(d => { let date = new Date(d); return date.getDate() + "/" + (date.getMonth()+1); }), datasets: [{ label: 'Booking Volume', data: sortedDates.map(d => dateCounts[d]), borderColor: '#3b82f6', borderWidth: 6, tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', pointRadius: 5, pointBackgroundColor: '#3b82f6' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: textColor } } } }
+      });
+    }
+
+    function notifyMaid(id) {
+      const area = document.getElementById(`maid-btn-area-${id}`);
+      area.innerHTML = `<button disabled class="w-full bg-slate-100 text-slate-400 py-4 rounded-2xl font-black italic uppercase">Processing...</button>`;
+      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'notifyMaid', ticketId: id }) })
+      .then(res => res.json()).then(res => { if(res.success) fetchData(false); });
     }
 
     function handleFormSubmit(event) {
-      event.preventDefault(); document.getElementById('submitBtn').innerHTML = "⏳ กำลังดำเนินการ..."; document.getElementById('submitBtn').disabled = true;
+      event.preventDefault(); document.getElementById('submitBtn').innerHTML = "⏳ Processing Request..."; document.getElementById('submitBtn').disabled = true;
       const file = document.getElementById('fileUpload').files[0];
-      const formObject = { action: window.currentAction, oldImage: window.currentOldImage, ticketId: document.getElementById('ticketId').value, building: document.getElementById('building').value, bookingDate: document.getElementById('bookingDate').value, startTime: document.getElementById('startTime').value, endTime: document.getElementById('endTime').value, eventName: document.getElementById('eventName').value, layout: document.getElementById('layout').value, contactName: document.getElementById('contactName').value, contactPhone: document.getElementById('contactPhone').value };
-      if (file) { const reader = new FileReader(); reader.onload = function(e) { formObject.fileData = e.target.result; formObject.fileName = file.name; sendToBackend(formObject); }; reader.readAsDataURL(file); } else { sendToBackend(formObject); }
+      const formObject = { action: window.currentAction, ticketId: document.getElementById('ticketId').value, building: document.getElementById('building').value, bookingDate: document.getElementById('bookingDate').value, startTime: document.getElementById('startTime').value, endTime: document.getElementById('endTime').value, eventName: document.getElementById('eventName').value, layout: document.getElementById('layout').value, contactName: document.getElementById('contactName').value, contactPhone: document.getElementById('contactPhone').value, oldImage: window.currentOldImage };
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) { formObject.fileData = e.target.result; formObject.fileName = file.name; sendToBackend(formObject); };
+        reader.readAsDataURL(file);
+      } else { sendToBackend(formObject); }
     }
 
     function sendToBackend(formObject) {
       fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(formObject) }).then(res => res.json()).then(res => {
-        document.getElementById('submitBtn').disabled = false;
-        if(res.success) {
-          document.getElementById('t_id').innerText = formObject.ticketId; document.getElementById('t_bld').innerText = formObject.building; document.getElementById('t_date').innerText = formObject.bookingDate; document.getElementById('t_time').innerText = formObject.startTime + " - " + formObject.endTime + " น."; document.getElementById('t_event').innerText = formObject.eventName;
-          document.getElementById('ticketTitleText').innerText = window.currentAction === 'update' ? "อัปเดตสำเร็จ!" : "จองพื้นที่สำเร็จ!";
-          resetFormToCreate(); fetchData(true); switchView('ticket'); window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else { resetFormToCreate(); Swal.fire('ข้อผิดพลาด', res.message, 'error'); }
-      }).catch(err => { document.getElementById('submitBtn').disabled = false; resetFormToCreate(); Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); });
+        document.getElementById('submitBtn').disabled = false; document.getElementById('submitBtn').innerHTML = "Confirm Booking 🚀";
+        if(res.success) { resetFormToCreate(); fetchData(false); switchView('calendar'); Swal.fire('Success', 'บันทึกสำเร็จ!', 'success'); } else { Swal.fire('Error', res.message, 'error'); }
+      });
     }
+
+    function parseThaiDate(str) {
+      if(!str) return null; const m = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+      try { let p = str.trim().split(' '); return (parseInt(p[2])-543) + "-" + (m.indexOf(p[1])+1).toString().padStart(2,'0') + "-" + p[0].padStart(2,'0'); } catch(e) { return null; }
+    }
+    function closeModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+    function editBooking(id) {
+      const b = globalBookingData.find(x => x.id === id); if(!b) return; closeModal();
+      document.getElementById('ticketId').value = b.id; document.getElementById('ticketId').readOnly = true;
+      document.getElementById('building').value = b.building; document.getElementById('bookingDate').value = b.date; document.getElementById('startTime').value = b.start; document.getElementById('endTime').value = b.end; document.getElementById('eventName').value = b.title; document.getElementById('layout').value = b.layout; document.getElementById('contactName').value = b.contact; document.getElementById('contactPhone').value = b.phone;
+      window.currentAction = 'update'; window.currentOldImage = b.image;
+      document.getElementById('submitBtn').innerText = "SAVE CHANGES"; document.getElementById('cancelEditBtn').classList.remove('hidden'); switchView('form');
+    }
+    function deleteBooking(id) {
+      Swal.fire({ title: 'Cancel Booking?', icon: 'warning', showCancelButton: true }).then((result) => {
+        if (result.isConfirmed) { fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', ticketId: id }) }).then(res => res.json()).then(res => { if(res.success) { fetchData(); closeModal(); } }); }
+      });
+    }
+    function resetFormToCreate() { document.getElementById('bookingForm').reset(); document.getElementById('ticketId').readOnly = false; window.currentAction = 'create'; document.getElementById('submitBtn').innerText = "Confirm Booking 🚀"; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('fileNameDisplay').classList.add('hidden'); }
+    function showFileName(input) { if(input.files[0]) { document.getElementById('fileNameText').innerText = input.files[0].name; document.getElementById('fileNameDisplay').classList.remove('hidden'); } }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      flatpickr("#bookingDate", { locale: "th", dateFormat: "d F Y", onReady: function(s, ds, i) { const ms = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']; i.formatDate = function(d, f) { return d.getDate() + " " + ms[d.getMonth()] + " " + (d.getFullYear() + 543); }; } });
+      flatpickr("#startTime, #endTime", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
+      calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth', locale: 'th', height: 'auto',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
+        eventClick: (info) => {
+          document.getElementById('modalDateTitle').innerText = info.event.extendedProps.date;
+          currentModalEvents = globalBookingData.filter(d => d.date === info.event.extendedProps.date);
+          document.getElementById('detailsModal').classList.remove('hidden'); switchTab(info.event.extendedProps.building);
+        }
+      });
+      calendar.render(); fetchData(true); setInterval(() => fetchData(false), 30000);
+    });
   </script>
 </body>
 </html>
