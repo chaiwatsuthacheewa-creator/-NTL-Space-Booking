@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NTL ระบบจองพื้นที่ส่วนกลาง</title>
+  <title>NTL Space | OPS-BSCS_GNR3</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -11,12 +11,34 @@
       darkMode: 'class', 
       theme: { 
         extend: { 
-          fontFamily: { sans: ['Prompt', 'sans-serif'] }
+          fontFamily: { sans: ['Prompt', 'sans-serif'] },
+          animation: {
+            'blob': 'blob 10s infinite',
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-in': 'slideIn 0.4s ease-out forwards'
+          },
+          keyframes: {
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            slideIn: {
+              '0%': { opacity: '0', transform: 'translateX(20px)' },
+              '100%': { opacity: '1', transform: 'translateX(0)' }
+            }
+          }
         } 
       } 
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -25,140 +47,216 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <style>
-    #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.3; pointer-events: none; }
-    body { transition: background 0.5s ease; min-height: 100vh; background-color: #f8fafc; }
-    body.dark { background-color: #020617; color: white; }
+    /* 🌟 Base & Scrollbar */
+    body { transition: background-color 0.5s ease, color 0.5s ease; min-height: 100vh; overflow-x: hidden; background-color: #f8fafc; color: #0f172a; }
+    body.dark { background-color: #050505; color: #f8fafc; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .dark ::-webkit-scrollbar-thumb { background: #ea580c; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
 
-    /* 📱 Dashboard Layout */
-    .dashboard-container { max-width: 1600px; margin: 0 auto; width: 100%; }
-    @media (min-width: 1280px) { .dashboard-container { aspect-ratio: 16 / 9; min-height: 850px; } }
+    /* 💎 Tech Background Pattern (Dot Matrix) */
+    .bg-dots {
+        background-image: radial-gradient(rgba(15, 23, 42, 0.08) 1.5px, transparent 1.5px);
+        background-size: 24px 24px;
+    }
+    .dark .bg-dots {
+        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+    }
 
-    .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.4); }
-    .dark .glass { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); }
+    /* 💎 Glassmorphism Panels */
+    .glass { 
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 1); box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.03);
+    }
+    .dark .glass { 
+        background: rgba(15, 15, 15, 0.75); border: 1px solid rgba(255, 255, 255, 0.05); 
+        border-top: 1px solid rgba(249, 115, 22, 0.3); border-left: 1px solid rgba(249, 115, 22, 0.1); 
+        box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(249, 115, 22, 0.03);
+    }
 
-    /* 🌈 Calendar Styling */
-    .fc { border-radius: 2rem !important; overflow: hidden; background: white; padding: 1.5rem; border: none !important; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-    .dark .fc { background: #1e293b; color: white; border: 1px solid #334155 !important; }
-    .fc-event { border: none !important; padding: 4px 8px !important; border-radius: 8px !important; font-weight: 600; cursor: pointer; }
+    /* 📅 FullCalendar Premium Reskin */
+    .fc { font-family: 'Prompt', sans-serif; }
+    .fc .fc-toolbar-title { font-weight: 800; font-size: 1.75rem; letter-spacing: -0.025em; }
+    .dark .fc .fc-toolbar-title { color: #ffffff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+    .fc .fc-button-primary { background-color: #64748b !important; border: none !important; color: white !important; font-weight: 700; border-radius: 0.5rem; text-transform: capitalize; padding: 0.5rem 1.25rem; transition: all 0.3s;}
+    .dark .fc .fc-button-primary { background-color: #1a1a1a !important; color: #f97316 !important; border: 1px solid rgba(249,115,22,0.3) !important; }
+    .fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: #3b82f6 !important; color: white !important; box-shadow: 0 4px 12px rgba(59,130,246,0.4) !important;}
+    .dark .fc .fc-button-primary:not(:disabled):active, .dark .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: #f97316 !important; color: white !important; box-shadow: 0 0 20px rgba(249,115,22,0.6) !important; border-color: transparent !important;}
     
-    /* Neon Header Colors */
-    .fc-col-header-cell.fc-day-sun { color: #ef4444; } .fc-col-header-cell.fc-day-mon { color: #eab308; }
-    .fc-col-header-cell.fc-day-tue { color: #ec4899; } .fc-col-header-cell.fc-day-wed { color: #22c55e; }
-    .fc-col-header-cell.fc-day-thu { color: #f97316; } .fc-col-header-cell.fc-day-fri { color: #3b82f6; }
-    .fc-col-header-cell.fc-day-sat { color: #a855f7; }
+    .fc-theme-standard td, .fc-theme-standard th { border: 1px solid rgba(0, 0, 0, 0.06) !important; }
+    .dark .fc-theme-standard td, .dark .fc-theme-standard th { border: 1px solid rgba(255, 255, 255, 0.06) !important; }
+    .fc-scrollgrid { border-radius: 1rem; overflow: hidden; border: 1px solid rgba(0,0,0,0.06) !important; }
+    .dark .fc-scrollgrid { border: 1px solid rgba(255,255,255,0.06) !important; }
+    
+    .fc-daygrid-day { transition: background-color 0.3s ease, box-shadow 0.3s ease; position: relative; }
+    .fc-daygrid-day:hover { background-color: rgba(59, 130, 246, 0.02); box-shadow: inset 0 0 25px rgba(59, 130, 246, 0.15); cursor: pointer; z-index: 5;}
+    .dark .fc-daygrid-day:hover { background-color: rgba(249, 115, 22, 0.05); box-shadow: inset 0 0 35px rgba(249, 115, 22, 0.3), inset 0 0 5px rgba(249, 115, 22, 0.5);}
+    .fc-event { border: none !important; padding: 4px 8px !important; border-radius: 6px !important; font-weight: 600; font-size: 0.75rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 1px 4px 2px 4px; transition: transform 0.2s;}
+    .fc-event:hover { transform: scale(1.03) translateY(-1px); z-index: 20; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-    .nav-active { background: #3b82f6 !important; color: white !important; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
-    
-    /* 🖼️ Fixed Upload Zone */
-    .upload-zone { border: 3px dashed #cbd5e1; border-radius: 2rem; position: relative; cursor: pointer; transition: 0.3s; }
-    .upload-zone:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); }
-    
-    .entrance-anim { animation: fadeInUp 0.6s ease-out both; }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .nav-active { background: linear-gradient(135deg, #3b82f6, #2563eb) !important; color: white !important; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+    .dark .nav-active { background: linear-gradient(135deg, #ea580c, #c2410c) !important; box-shadow: 0 0 15px rgba(234, 88, 12, 0.5); }
+    .glass-input { background: rgba(255,255,255,0.9); border: 1px solid #e2e8f0; transition: all 0.3s; }
+    .dark .glass-input { background: rgba(20,20,20,0.8); border: 1px solid rgba(255,255,255,0.1); color: white; }
+    .glass-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.15); outline: none; }
+    .dark .glass-input:focus { border-color: #f97316; box-shadow: 0 0 0 4px rgba(249,115,22,0.2); }
   </style>
 </head>
-<body class="light text-slate-800 antialiased selection:bg-blue-500/20">
+<body class="light antialiased selection:bg-blue-500/30 relative bg-dots">
 
-  <canvas id="bg-canvas"></canvas>
+  <div class="fixed inset-0 w-full h-full z-[-1] overflow-hidden pointer-events-none">
+    <div class="block dark:hidden">
+        <div class="absolute top-[-15%] left-[-10%] w-[40rem] h-[40rem] bg-blue-400 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob"></div>
+        <div class="absolute top-[30%] right-[-10%] w-[35rem] h-[35rem] bg-cyan-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-blob animation-delay-2000"></div>
+    </div>
+    <div class="hidden dark:block">
+        <div class="absolute top-[-20%] left-[-10%] w-[50rem] h-[50rem] bg-orange-600 rounded-full mix-blend-screen filter blur-[150px] opacity-[0.15] animate-blob"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[40rem] h-[40rem] bg-red-600 rounded-full mix-blend-screen filter blur-[150px] opacity-[0.12] animate-blob animation-delay-2000"></div>
+    </div>
+  </div>
 
-  <nav class="sticky top-0 z-50 no-print border-b border-slate-200/50 dark:border-white/5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl transition-all">
-    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between">
+  <nav class="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/5 glass transition-all">
+    <div class="w-full max-w-[96%] 2xl:max-w-[1800px] mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-700 dark:from-orange-500 dark:to-red-600 rounded-xl flex items-center justify-center shadow-lg border border-blue-400/50 dark:border-orange-400/50">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         </div>
-        <div>
-          <h1 class="text-xl font-black tracking-tighter dark:text-white italic uppercase">NTL SPACE SYSTEM</h1>
+        <div class="flex flex-col">
+            <h1 class="text-2xl font-black tracking-tight dark:text-white leading-none dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] italic">NTL SPACE SYSTEM</h1>
+            <span class="text-[10px] text-blue-600 dark:text-orange-500 font-black tracking-widest uppercase mt-0.5">OPS-BSCS_GNR3 Systems</span>
         </div>
       </div>
       
-      <div class="flex items-center gap-4">
-        <div class="flex glass p-1.5 rounded-2xl gap-1">
-          <button onclick="switchView('calendar')" id="navCalendar" class="px-5 py-2 rounded-xl text-sm font-bold nav-active transition-all">🗓️ ปฏิทิน</button>
-          <button onclick="switchView('analytics')" id="navAnalytics" class="px-5 py-2 rounded-xl text-sm font-medium dark:text-slate-400 transition-all">📊 สถิติ</button>
-          <button onclick="switchView('form')" id="navForm" class="px-5 py-2 rounded-xl text-sm font-medium dark:text-slate-400 transition-all">➕ จองใหม่</button>
+      <div class="flex items-center gap-3">
+        <div class="flex bg-slate-100/50 dark:bg-black/60 p-1.5 rounded-2xl gap-1 border border-slate-200/50 dark:border-white/5 backdrop-blur-md shadow-inner">
+          
+          <a href="https://add00917-hue.github.io/GNR3-Building-MS/" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-500 hover:bg-white dark:hover:bg-white/10 hover:shadow-sm hover:text-blue-600 dark:text-slate-400 dark:hover:text-orange-400 transition-all flex items-center gap-2">
+            🏠 หน้าหลัก
+          </a>
+          
+          <div class="w-px bg-slate-300/50 dark:bg-white/10 my-2 mx-1"></div>
+
+          <button onclick="switchView('calendar')" id="navCalendar" class="px-5 py-2 rounded-xl text-sm font-bold nav-active transition-all flex items-center gap-2">🗓️ ปฏิทิน</button>
+          <button onclick="switchView('analytics')" id="navAnalytics" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-2">📊 สถิติ</button>
+          <button onclick="switchView('form')" id="navForm" class="px-5 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-2">➕ จองใหม่</button>
         </div>
-        <button onclick="toggleDarkMode()" id="modeToggle" class="w-11 h-11 glass rounded-xl flex items-center justify-center hover:scale-105 transition-all text-xl">🌙</button>
+        <button onclick="toggleDarkMode()" id="modeToggle" class="w-11 h-11 bg-white/90 dark:bg-black/80 border border-slate-200/80 dark:border-white/10 rounded-xl flex items-center justify-center hover:scale-105 transition-all text-xl shadow-sm">🌙</button>
       </div>
     </div>
   </nav>
 
-  <main class="dashboard-container px-6 py-8">
+  <main class="w-full max-w-[96%] 2xl:max-w-[1800px] mx-auto px-4 md:px-6 py-8 min-h-[calc(100vh-80px)] flex flex-col">
     
-    <div id="calendarView" class="h-full flex flex-col gap-6 animate-fade-in">
-      <div class="flex justify-between items-end">
-        <div class="entrance-anim">
-          <h2 class="text-4xl font-black dark:text-white tracking-tighter border-l-8 border-blue-600 pl-4">Booking Schedule</h2>
-          <p id="lastUpdatedText" class="text-slate-500 font-bold text-xs mt-2 uppercase"></p>
+    <div id="calendarView" class="flex-1 flex flex-col gap-6 animate-fade-in">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h2 class="text-4xl font-black dark:text-white flex items-center gap-4 tracking-tighter">
+            <span class="w-2 h-10 bg-gradient-to-b from-blue-500 to-blue-700 dark:from-orange-400 dark:to-orange-600 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] dark:shadow-[0_0_15px_rgba(249,115,22,0.8)]"></span>
+            Booking Schedule
+          </h2>
+          <p id="lastUpdatedText" class="text-slate-500 dark:text-slate-400 font-black text-[10px] mt-2 ml-6 uppercase tracking-[0.2em]"></p>
         </div>
-        <div class="flex gap-3 entrance-anim">
-          <span class="glass px-4 py-2 rounded-xl text-[10px] font-black dark:text-white uppercase border-b-4 border-blue-500 shadow-sm">Ari Hills</span>
-          <span class="glass px-4 py-2 rounded-xl text-[10px] font-black dark:text-white uppercase border-b-4 border-orange-500 shadow-sm">KSL Tower</span>
+        <div class="flex gap-3">
+          <span class="glass px-5 py-2 rounded-full text-xs font-black text-blue-700 dark:text-white shadow-sm border border-blue-200 dark:border-blue-500/50 flex items-center gap-2 uppercase tracking-wide"><span class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.8)]"></span> Ari Hills</span>
+          <span class="glass px-5 py-2 rounded-full text-xs font-black text-orange-600 dark:text-white shadow-sm border border-orange-200 dark:border-orange-500/50 flex items-center gap-2 uppercase tracking-wide"><span class="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]"></span> KSL Tower</span>
         </div>
       </div>
-      <div class="flex-1 min-h-0 entrance-anim" style="animation-delay: 0.2s"><div id='calendar' class="h-full"></div></div>
-    </div>
 
-    <div id="analyticsView" class="hidden h-full flex flex-col gap-8 animate-fade-in">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div onclick="showAnalyticsDetails('Total')" class="glass p-8 rounded-[2.5rem] cursor-pointer hover:scale-[1.02] transition-all group entrance-anim">
-          <p class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">การจองเดือนนี้</p>
-          <p class="text-6xl font-black dark:text-white mt-2 group-hover:text-blue-600" id="statMonthTotal">0</p>
-        </div>
-        <div onclick="showAnalyticsDetails('Ari Hills')" class="glass p-8 rounded-[2.5rem] border-l-[10px] border-blue-600 cursor-pointer hover:scale-[1.02] transition-all entrance-anim" style="animation-delay: 0.1s">
-          <p class="text-blue-600 font-bold text-[10px] uppercase">Ari Hills</p>
-          <p class="text-6xl font-black dark:text-white mt-2" id="statMonthAri">0</p>
-        </div>
-        <div onclick="showAnalyticsDetails('KSL Tower')" class="glass p-8 rounded-[2.5rem] border-l-[10px] border-orange-500 cursor-pointer hover:scale-[1.02] transition-all entrance-anim" style="animation-delay: 0.2s">
-          <p class="text-orange-500 font-bold text-[10px] uppercase">KSL Tower</p>
-          <p class="text-6xl font-black dark:text-white mt-2" id="statMonthKsl">0</p>
-        </div>
-        <div class="glass p-8 rounded-[2.5rem] bg-blue-600/5 dark:bg-blue-600/10 entrance-anim" style="animation-delay: 0.3s">
-          <p class="text-slate-400 font-bold text-[10px] uppercase">Trend 30 Days</p>
-          <p class="text-6xl font-black text-blue-500 mt-2" id="stat30Days">0</p>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 flex-1 gap-8">
-        <div class="lg:col-span-2 glass p-8 rounded-[3rem] h-[400px] entrance-anim" style="animation-delay: 0.4s"><canvas id="smartBarChart"></canvas></div>
-        <div class="glass p-8 rounded-[3rem] h-[400px] flex items-center justify-center entrance-anim" style="animation-delay: 0.5s"><canvas id="smartDonutChart"></canvas></div>
-      </div>
-    </div>
-
-    <div id="formView" class="hidden h-full animate-fade-in max-w-5xl mx-auto">
-      <div class="glass p-10 md:p-16 rounded-[4rem] border-t-[12px] border-blue-600 relative overflow-hidden">
-        <h2 class="text-4xl font-black dark:text-white mb-10 tracking-tighter italic">📝 บันทึกข้อมูลการจองพื้นที่</h2>
-        
-        <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 relative z-10">
-          <div class="col-span-full bg-slate-100/50 dark:bg-white/5 p-8 rounded-3xl border dark:border-white/10" id="ticketIdContainer">
-            <label class="block text-[10px] font-black text-blue-500 mb-2 uppercase tracking-[0.2em]">Ticket ID Reference *</label>
-            <input type="text" id="ticketId" required placeholder="เช่น P26040001" class="w-full bg-transparent border-none text-4xl font-black dark:text-white focus:ring-0 placeholder:opacity-20 italic">
+      <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 flex-1 items-start">
+          <div class="xl:col-span-3 glass rounded-[2rem] p-5 md:p-8 shadow-sm w-full"><div id='calendar'></div></div>
+          <div class="xl:col-span-1 glass rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col sticky top-28">
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200/50 dark:border-white/10">
+                <h3 class="text-xl font-black text-slate-800 dark:text-white flex items-center gap-2 drop-shadow-[0_0_5px_rgba(255,255,255,0.1)]">
+                    ⚡ Upcoming <span class="text-xs bg-slate-200 dark:bg-orange-500/20 dark:text-orange-400 text-slate-600 px-2 py-1 rounded-md">5 รายการ</span>
+                </h3>
+            </div>
+            <div id="upcomingEventsList" class="space-y-4">
+                <div class="text-center py-10 opacity-50"><span class="text-4xl block mb-3">⏳</span><p class="text-sm font-bold">กำลังโหลดข้อมูล...</p></div>
+            </div>
           </div>
-          
-          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">📍 เลือกอาคาร</label><select id="building" required class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"><option value="" disabled selected>กรุณาเลือกอาคาร...</option><option value="Ari Hills">Ari Hills</option><option value="KSL Tower">KSL Tower</option></select></div>
-          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🗓️ วันที่ใช้งาน</label><input type="text" id="bookingDate" required placeholder="คลิกเลือกจากปฏิทิน" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 dark:text-white font-black cursor-pointer"></div>
-          
-          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">⏰ เวลาเริ่ม</label><input type="text" id="startTime" required placeholder="เช่น 09:00" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border text-center font-black text-2xl dark:text-white"></div>
-          <div class="space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">⏳ เวลาสิ้นสุด</label><input type="text" id="endTime" required placeholder="เช่น 12:00" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border text-center font-black text-2xl dark:text-white"></div>
+      </div>
+    </div>
 
-          <div class="col-span-full space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🎯 ชื่อกิจกรรม / หัวข้อประชุม</label><input type="text" id="eventName" required placeholder="เช่น NTL Culture Bootcamp Q2/2026" class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border dark:text-white font-bold"></div>
-          <div class="col-span-full space-y-2"><label class="font-bold text-slate-500 ml-1 text-xs uppercase">🛋️ รายละเอียดรูปแบบพื้นที่</label><textarea id="layout" rows="2" required placeholder="เช่น จัดแบบ Theater 50 ที่นั่ง, มีเครื่องเสียง..." class="w-full p-4 rounded-2xl bg-white dark:bg-slate-900 border dark:text-white font-medium"></textarea></div>
+    <div id="analyticsView" class="hidden flex-1 flex flex-col gap-6 animate-fade-in max-w-[1400px] mx-auto w-full">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div onclick="showAnalyticsDetails('Total')" class="glass p-8 rounded-3xl cursor-pointer hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_10px_30px_rgba(249,115,22,0.2)] transition-all group">
+                <p class="text-slate-500 dark:text-orange-400/80 font-bold text-xs uppercase tracking-widest group-hover:text-blue-500 dark:group-hover:text-orange-500 transition-colors">รวมเดือนนี้ (คลิกดู)</p>
+                <p class="text-6xl font-black mt-2 dark:text-white group-hover:scale-105 origin-left transition-transform" id="statMonthTotal">0</p>
+            </div>
+            <div onclick="showAnalyticsDetails('Ari Hills')" class="glass p-8 rounded-3xl border-b-[6px] border-blue-500 dark:border-blue-500 cursor-pointer hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_10px_30px_rgba(59,130,246,0.2)] transition-all group">
+                <p class="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-widest">Ari Hills (คลิกดู)</p>
+                <p class="text-6xl font-black mt-2 dark:text-white group-hover:scale-105 origin-left transition-transform" id="statMonthAri">0</p>
+            </div>
+            <div onclick="showAnalyticsDetails('KSL Tower')" class="glass p-8 rounded-3xl border-b-[6px] border-orange-500 dark:border-orange-500 cursor-pointer hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_10px_30px_rgba(249,115,22,0.2)] transition-all group">
+                <p class="text-orange-600 dark:text-orange-400 font-bold text-xs uppercase tracking-widest">KSL Tower (คลิกดู)</p>
+                <p class="text-6xl font-black mt-2 dark:text-white group-hover:scale-105 origin-left transition-transform" id="statMonthKsl">0</p>
+            </div>
+            <div onclick="showAnalyticsDetails('Trend')" class="glass p-8 rounded-3xl bg-blue-50/50 dark:bg-orange-500/5 cursor-pointer hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_10px_30px_rgba(249,115,22,0.2)] transition-all group">
+                <p class="text-slate-500 dark:text-orange-400/80 font-bold text-xs uppercase tracking-widest group-hover:text-indigo-500 dark:group-hover:text-orange-500 transition-colors">Trend 30 วัน (คลิกดู)</p>
+                <p class="text-6xl font-black mt-2 text-indigo-600 dark:text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.4)] group-hover:scale-105 origin-left transition-transform" id="stat30Days">0</p>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1 min-h-[500px]">
+            <div class="md:col-span-2 glass p-8 rounded-[2rem] flex flex-col relative group">
+                <h3 class="font-black text-slate-800 dark:text-white mb-1 text-xl">📈 สถิติเทียบวันที่ / ปริมาณการจอง</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-orange-500/60 mb-4">* สามารถคลิกที่จุดบนกราฟเพื่อดูรายการจองของวันนั้นได้</p>
+                <div class="flex-1 relative"><canvas id="smartBarChart"></canvas></div>
+            </div>
+            <div class="glass p-8 rounded-[2rem] flex flex-col relative group">
+                <h3 class="font-black text-slate-800 dark:text-white mb-1 text-xl">🍩 สัดส่วนพื้นที่ (เดือนนี้)</h3>
+                <p class="text-xs font-bold text-slate-400 dark:text-orange-500/60 mb-4">* คลิกที่กราฟเพื่อกรองดูตามตึก</p>
+                <div class="flex-1 relative"><canvas id="smartDonutChart"></canvas></div>
+            </div>
+        </div>
+    </div>
 
-          <div class="col-span-full">
-            <label class="font-bold text-slate-500 ml-1 text-xs uppercase block mb-2">🖼️ แผนผังการจัดพื้นที่ (JPG/PNG)</label>
-            <div onclick="document.getElementById('fileUpload').click()" class="upload-zone p-8 text-center bg-white/40 dark:bg-slate-900/40">
-              <span class="text-3xl block mb-2">📁</span>
-              <p class="text-slate-400 font-bold text-sm">คลิกเพื่อเลือกไฟล์รูปภาพแปลน</p>
-              <input type="file" id="fileUpload" accept="image/*" onchange="showFileName(this)" class="hidden">
-              <div id="fileNameDisplay" class="hidden mt-4 bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-100">✅ <span id="fileNameText"></span></div>
+    <div id="formView" class="hidden animate-fade-in max-w-4xl mx-auto w-full">
+      <div class="glass p-8 md:p-12 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+        <div class="mb-10 border-b border-slate-200/80 dark:border-white/10 pb-6 text-center">
+            <h2 class="text-4xl font-black dark:text-white italic tracking-tighter">📝 บันทึกจองพื้นที่ส่วนกลาง</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 font-bold tracking-wide">กรอกข้อมูลให้ครบถ้วนเพื่อให้ทีม <span class="text-blue-600 dark:text-orange-500">OPS-BSCS_GNR3</span> เตรียมความพร้อม</p>
+        </div>
+        
+        <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <div class="col-span-full bg-slate-50/80 dark:bg-black/60 p-5 rounded-2xl border border-slate-200 dark:border-orange-500/30" id="ticketIdContainer">
+            <label class="block text-[10px] font-black text-slate-500 dark:text-orange-500/80 mb-1 uppercase tracking-[0.2em]">Ticket ID <span class="text-red-500">*</span></label>
+            <input type="text" id="ticketId" required placeholder="เช่น BSCS-2604" class="w-full bg-transparent border-none text-3xl font-black text-blue-700 dark:text-orange-500 focus:ring-0 p-0 placeholder:opacity-20 italic">
+          </div>
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">📍 เลือกอาคาร</label><select id="building" required class="w-full px-5 py-4 rounded-xl glass-input cursor-pointer font-bold text-lg"><option value="" disabled selected>เลือกอาคาร...</option><option value="Ari Hills">Ari Hills</option><option value="KSL Tower">KSL Tower</option></select></div>
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">🗓️ วันที่ใช้งาน</label><input type="text" id="bookingDate" required placeholder="คลิกเลือกวัน" class="w-full px-5 py-4 rounded-xl glass-input cursor-pointer font-bold text-lg"></div>
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">⏰ เวลาเริ่ม</label><input type="text" id="startTime" required placeholder="09:00" class="w-full px-5 py-4 rounded-xl glass-input text-center font-black text-2xl"></div>
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">⏳ เวลาสิ้นสุด</label><input type="text" id="endTime" required placeholder="12:00" class="w-full px-5 py-4 rounded-xl glass-input text-center font-black text-2xl"></div>
+          <div class="col-span-full space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">🎯 ชื่อกิจกรรม / หัวข้อ</label><input type="text" id="eventName" required placeholder="เช่น NTL Bootcamp Q2..." class="w-full px-5 py-4 rounded-xl glass-input font-bold text-lg"></div>
+          <div class="col-span-full space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">🛋️ รูปแบบพื้นที่</label><textarea id="layout" rows="2" required placeholder="เช่น จัดแบบ Theater 50 ที่นั่ง..." class="w-full px-5 py-4 rounded-xl glass-input font-medium text-lg"></textarea></div>
+          
+          <div class="col-span-full bg-blue-50/80 dark:bg-black/60 p-5 rounded-2xl border border-blue-200 dark:border-orange-500/30">
+            <label class="text-[11px] font-black text-blue-700 dark:text-orange-500 block mb-3 uppercase tracking-wide">🛠️ อุปกรณ์เสริม (คลิกเพื่อเลือก)</label>
+            <div class="flex flex-wrap gap-3" id="equipmentChecklist">
+                <label class="cursor-pointer"><input type="checkbox" value="โปรเจกเตอร์/จอทีวี" class="peer hidden equipment-cb"><span class="px-4 py-2 rounded-xl text-sm font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-orange-600 peer-checked:border-blue-600 dark:peer-checked:border-orange-600 peer-checked:text-white transition-all shadow-sm">📺 โปรเจกเตอร์</span></label>
+                <label class="cursor-pointer"><input type="checkbox" value="ไมโครโฟน" class="peer hidden equipment-cb"><span class="px-4 py-2 rounded-xl text-sm font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-orange-600 peer-checked:border-blue-600 dark:peer-checked:border-orange-600 peer-checked:text-white transition-all shadow-sm">🎤 ไมโครโฟน</span></label>
+                <label class="cursor-pointer"><input type="checkbox" value="ไวท์บอร์ด" class="peer hidden equipment-cb"><span class="px-4 py-2 rounded-xl text-sm font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-orange-600 peer-checked:border-blue-600 dark:peer-checked:border-orange-600 peer-checked:text-white transition-all shadow-sm">📝 ไวท์บอร์ด</span></label>
+                <label class="cursor-pointer"><input type="checkbox" value="ปลั๊กพ่วง" class="peer hidden equipment-cb"><span class="px-4 py-2 rounded-xl text-sm font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-500 peer-checked:bg-blue-600 dark:peer-checked:bg-orange-600 peer-checked:border-blue-600 dark:peer-checked:border-orange-600 peer-checked:text-white transition-all shadow-sm">🔌 ปลั๊กพ่วง</span></label>
             </div>
           </div>
 
-          <div class="col-span-1 space-y-1"><label class="font-bold text-slate-500 text-[10px] uppercase">👤 ผู้ติดต่อ</label><input type="text" id="contactName" required placeholder="คุณเบียร์ (สถาพร)" class="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border"></div>
-          <div class="col-span-1 space-y-1"><label class="font-bold text-slate-500 text-[10px] uppercase">📞 เบอร์โทร</label><input type="text" id="contactPhone" required placeholder="08x-xxx-xxxx" class="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border"></div>
-
-          <div class="col-span-full pt-8">
-            <button type="submit" id="submitBtn" class="w-full py-7 bg-blue-600 text-white rounded-[2.5rem] font-black text-2xl shadow-2xl shadow-blue-500/40 hover:scale-[1.01] active:scale-95 transition-all italic uppercase">CONFIRM BOOKING 🚀</button>
-            <button type="button" id="cancelEditBtn" onclick="resetFormToCreate()" class="hidden w-full mt-4 text-slate-400 font-bold">ยกเลิกการแก้ไข</button>
+          <div class="col-span-full">
+            <label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide block mb-1.5">🖼️ แนบไฟล์แปลนภาพ (ถ้ามี)</label>
+            <div onclick="document.getElementById('fileUpload').click()" class="border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-blue-500 dark:hover:border-orange-500 rounded-2xl p-6 text-center cursor-pointer transition-all bg-white/50 dark:bg-black/40 group">
+              <span class="text-3xl mb-2 block group-hover:scale-110 transition-transform">📁</span><p class="text-slate-500 dark:text-slate-400 font-bold text-sm">คลิกเพื่ออัปโหลด (JPG, PNG)</p>
+              <input type="file" id="fileUpload" accept="image/*" onchange="showFileName(this)" class="hidden">
+              <div id="fileNameDisplay" class="hidden mt-3 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-800/50 inline-block">✅ <span id="fileNameText"></span></div>
+            </div>
+          </div>
+          
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">👤 ผู้ติดต่อ</label><input type="text" id="contactName" required placeholder="ชื่อ-สกุล" class="w-full px-5 py-4 rounded-xl glass-input font-bold text-lg"></div>
+          <div class="space-y-1.5"><label class="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">📞 เบอร์โทร</label><input type="tel" id="contactPhone" required placeholder="08x-xxx-xxxx" class="w-full px-5 py-4 rounded-xl glass-input font-bold text-lg"></div>
+          
+          <div class="col-span-full pt-6">
+            <button type="submit" id="submitBtn" class="w-full py-5 bg-gradient-to-r from-blue-600 to-blue-500 dark:from-orange-600 dark:to-orange-500 hover:scale-[1.02] text-white rounded-2xl font-black text-2xl shadow-xl dark:shadow-[0_0_25px_rgba(249,115,22,0.4)] transition-all uppercase tracking-widest italic">ยืนยันการจอง 🚀</button>
+            <button type="button" id="cancelEditBtn" onclick="resetFormToCreate()" class="hidden w-full mt-4 py-4 text-slate-500 font-bold rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 transition-all">ยกเลิกการแก้ไข</button>
           </div>
         </form>
       </div>
@@ -166,17 +264,23 @@
   </main>
 
   <div id="detailsModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onclick="closeModal()"></div>
-    <div class="glass w-full max-w-6xl rounded-[3.5rem] shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden border-8 border-white dark:border-slate-800 animate-fade-in">
-      <div class="p-8 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
-        <div><h3 class="text-3xl font-black dark:text-white italic tracking-tighter"><span id="modalDateTitle" class="text-blue-600 font-black">รายละเอียด</span></h3></div>
-        <button onclick="closeModal()" class="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400 hover:text-red-500 flex items-center justify-center text-4xl transition-all">&times;</button>
+    <div class="absolute inset-0 bg-slate-900/70 dark:bg-black/90 backdrop-blur-md" onclick="closeModal()"></div>
+    <div class="glass w-full max-w-2xl rounded-[2rem] shadow-2xl relative flex flex-col max-h-[85vh] border border-white/40 dark:border-orange-500/30 animate-fade-in overflow-hidden z-10">
+      
+      <div class="px-8 py-6 border-b border-slate-200/80 dark:border-white/10 flex justify-between items-center bg-white/80 dark:bg-black/80 backdrop-blur-xl">
+        <h3 class="text-2xl font-black dark:text-white flex items-center gap-3">
+            <span id="modalDateTitle" class="text-blue-700 dark:text-orange-500 drop-shadow-sm">รายละเอียด</span>
+        </h3>
+        <button onclick="closeModal()" class="w-12 h-12 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-300 hover:bg-red-100 hover:text-red-600 flex items-center justify-center text-3xl transition-all">&times;</button>
       </div>
-      <div class="flex border-b text-lg font-black bg-white dark:bg-slate-900">
-        <button onclick="switchTab('Ari Hills')" id="tabAri" class="flex-1 py-6 border-b-8 border-blue-600 text-blue-600 bg-blue-50/20 transition-all font-black">📍 ARI HILLS</button>
-        <button onclick="switchTab('KSL Tower')" id="tabKsl" class="flex-1 py-6 border-b-8 border-transparent text-slate-400 transition-all font-bold">📍 KSL TOWER</button>
+      
+      <div class="flex border-b border-slate-200/80 dark:border-white/10 text-base font-black bg-white/90 dark:bg-black/90 backdrop-blur-xl">
+        <button onclick="switchTab('Ari Hills')" id="tabAri" class="flex-1 py-5 border-b-[6px] border-blue-600 dark:border-orange-500 text-blue-700 dark:text-orange-500 bg-blue-50/50 dark:bg-orange-900/10 transition-all tracking-widest">📍 ARI HILLS</button>
+        <button onclick="switchTab('KSL Tower')" id="tabKsl" class="flex-1 py-5 border-b-[6px] border-transparent text-slate-400 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all tracking-widest">📍 KSL TOWER</button>
       </div>
-      <div id="modalContent" class="p-8 overflow-y-auto space-y-8 flex-1 hide-scrollbar bg-slate-50/50 dark:bg-slate-900/50 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start"></div>
+      
+      <div id="modalContent" class="p-8 overflow-y-auto space-y-6 flex-1 bg-slate-50/50 dark:bg-black/60 hide-scrollbar">
+          </div>
     </div>
   </div>
 
@@ -186,70 +290,41 @@
     let globalBookingData = [], calendar, donutChartInstance, barChartInstance, currentModalEvents = [];
     window.currentAction = 'create'; window.currentOldImage = '';
 
-    // 🎨 IT Background Animation
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let points = [];
-    function initCanvas() {
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        points = [];
-        for(let i=0; i<60; i++) points.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
-    }
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const isDark = document.body.classList.contains('dark');
-        ctx.strokeStyle = isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.08)';
-        ctx.lineWidth = 1;
-        points.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy;
-            if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-            points.slice(i+1).forEach(p2 => {
-                let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                if(dist < 200) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-            });
-        });
-        requestAnimationFrame(draw);
-    }
-    window.addEventListener('resize', initCanvas); initCanvas(); draw();
-
     function toggleDarkMode() {
       const isDark = document.body.classList.toggle('dark');
       document.body.classList.toggle('light', !isDark);
       document.documentElement.classList.toggle('dark', isDark);
       document.getElementById('modeToggle').innerHTML = isDark ? '☀️' : '🌙';
       if(calendar) calendar.render();
-      if(barChartInstance) renderCharts();
+      if(barChartInstance) renderCharts(); 
     }
 
     function switchView(view) {
       ['calendarView', 'analyticsView', 'formView'].forEach(v => document.getElementById(v).classList.add('hidden'));
       document.getElementById(view + 'View').classList.remove('hidden');
+      
       const navs = { calendar: 'navCalendar', analytics: 'navAnalytics', form: 'navForm' };
-      Object.values(navs).forEach(id => document.getElementById(id).className = "px-5 py-2 rounded-xl text-sm font-medium text-slate-400 dark:text-slate-500 cursor-pointer transition-all");
-      if(navs[view]) document.getElementById(navs[view]).className = "px-5 py-2 rounded-xl text-sm font-bold nav-active cursor-pointer";
+      Object.values(navs).forEach(id => {
+          document.getElementById(id).className = "px-5 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all flex items-center gap-2";
+      });
+      if(navs[view]) document.getElementById(navs[view]).className = "px-5 py-2 rounded-xl text-sm font-bold nav-active transition-all flex items-center gap-2";
+      
       if(view === 'calendar' && calendar) { setTimeout(() => calendar.render(), 100); }
-      if(view === 'analytics') renderCharts();
-    }
-
-    function showAnalyticsDetails(filter) {
-        const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
-        let filteredData = globalBookingData.filter(d => {
-            let iso = parseThaiDate(d.date); if(!iso) return false;
-            let date = new Date(iso); return date.getMonth() === m && date.getFullYear() === y;
-        });
-        if (filter !== 'Total') filteredData = filteredData.filter(d => d.building === filter);
-        if (filteredData.length === 0) { Swal.fire('No Records', 'ไม่พบข้อมูลการจองในเดือนนี้', 'info'); return; }
-        document.getElementById('modalDateTitle').innerText = filter === 'Total' ? "Summary ประจำเดือน" : "Building: " + filter;
-        currentModalEvents = filteredData;
-        document.getElementById('detailsModal').classList.remove('hidden');
-        switchTab(filter === 'Total' ? 'Ari Hills' : filter);
+      if(view === 'analytics') { setTimeout(() => renderCharts(), 100); } 
     }
 
     function fetchData(isInitialLoad = false) {
-      fetch(WEB_APP_URL + "?action=getBookingData").then(res => res.json()).then(data => {
-        globalBookingData = data; updateCalendar();
+      fetch(WEB_APP_URL + "?action=getBookingData")
+      .then(res => res.json())
+      .then(data => {
+        globalBookingData = data; 
+        updateCalendar();
+        renderUpcomingList(); 
+        if(!document.getElementById('analyticsView').classList.contains('hidden')) renderCharts();
         document.getElementById('lastUpdatedText').innerHTML = "SYSTEM READY: " + new Date().toLocaleTimeString('th-TH');
         if(isInitialLoad) Swal.close();
+      }).catch(err => {
+          if(isInitialLoad) Swal.fire('Error', 'ไม่สามารถเชื่อมต่อระบบได้', 'error');
       });
     }
 
@@ -258,10 +333,8 @@
       globalBookingData.forEach(d => {
         let iso = parseThaiDate(d.date);
         if(iso) { 
-          let title = d.building;
-          if(d.image && d.image.startsWith("http")) title += " [🖼️ แปลนภาพ]";
           events.push({ 
-            title: title, start: iso, allDay: true, 
+            title: d.title || d.building, start: iso, allDay: true, 
             color: d.building === 'Ari Hills' ? '#3b82f6' : '#f97316',
             extendedProps: { date: d.date, building: d.building } 
           }); 
@@ -270,32 +343,126 @@
       calendar.removeAllEvents(); calendar.addEventSource(events);
     }
 
+    function renderUpcomingList() {
+        const container = document.getElementById('upcomingEventsList');
+        const now = new Date(); now.setHours(0,0,0,0); 
+
+        let upcoming = globalBookingData.filter(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return false;
+            return new Date(iso) >= now;
+        }).sort((a, b) => {
+            return new Date(parseThaiDate(a.date) + 'T' + a.start) - new Date(parseThaiDate(b.date) + 'T' + b.start);
+        }).slice(0, 5); 
+
+        if (upcoming.length === 0) {
+            container.innerHTML = `<div class="text-center py-10 opacity-30"><span class="text-6xl block mb-2">🍃</span><p class="text-lg font-bold">ว่าง</p></div>`;
+            return;
+        }
+
+        container.innerHTML = upcoming.map((p, index) => {
+            const isAri = p.building === 'Ari Hills';
+            const bgClass = isAri ? 'bg-white/80 dark:bg-white/5' : 'bg-white/80 dark:bg-white/5';
+            const borderClass = isAri ? 'border-l-blue-500' : 'border-l-orange-500';
+            const textClass = isAri ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-500';
+            
+            return `
+            <div onclick="openModalDirectly('${p.date}', '${p.building}')" 
+                 class="p-5 rounded-2xl ${bgClass} border border-slate-200/80 dark:border-white/10 border-l-[6px] ${borderClass} shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer animate-slide-in group"
+                 style="animation-delay: ${index * 50}ms">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-black text-slate-600 dark:text-slate-300">${p.date}</span>
+                    <span class="text-[10px] font-black ${textClass} bg-slate-100 dark:bg-black px-2 py-1 rounded-md shadow-inner border dark:border-white/10">${p.start} - ${p.end}</span>
+                </div>
+                <h4 class="text-base font-black text-slate-800 dark:text-white truncate mb-2 group-hover:text-blue-500 dark:group-hover:text-orange-400 transition-colors">${p.title || 'จองพื้นที่'}</h4>
+                <p class="text-xs font-bold text-slate-500 flex items-center gap-1">📍 ${p.building} • 👤 ${p.contact}</p>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function openModalDirectly(dateStr, buildingStr) {
+        document.getElementById('modalDateTitle').innerText = "📅 ข้อมูลวันที่: " + dateStr;
+        currentModalEvents = globalBookingData.filter(d => d.date === dateStr);
+        document.getElementById('detailsModal').classList.remove('hidden'); 
+        document.getElementById('detailsModal').classList.add('flex');
+        switchTab(buildingStr);
+    }
+
+    function showAnalyticsDetails(filterType, filterValue = null) {
+      const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
+      let filteredData = [];
+      let preSelectTab = 'Ari Hills';
+      let title = "";
+
+      if (filterType === 'Total' || filterType === 'Ari Hills' || filterType === 'KSL Tower') {
+         filteredData = globalBookingData.filter(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return false;
+            let eventDate = new Date(iso); return eventDate.getMonth() === m && eventDate.getFullYear() === y;
+         });
+         title = "📊 สถิติการจองเดือนนี้";
+         if (filterType === 'KSL Tower') preSelectTab = 'KSL Tower';
+      } else if (filterType === 'Trend') {
+         let thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(now.getDate() - 30);
+         filteredData = globalBookingData.filter(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return false;
+            let eventDate = new Date(iso); return eventDate >= thirtyDaysAgo && eventDate <= now;
+         });
+         title = "📈 สถิติ 30 วันย้อนหลัง";
+      } else if (filterType === 'Date') {
+         filteredData = globalBookingData.filter(d => parseThaiDate(d.date) === filterValue);
+         let thaiStr = filteredData.length > 0 ? filteredData[0].date : filterValue;
+         title = "📅 รายการประจำวันที่: " + thaiStr;
+      }
+
+      if(filteredData.length === 0) { Swal.fire('No Data', 'ไม่พบข้อมูลรายการจองในช่วงเวลานี้', 'info'); return; }
+      
+      currentModalEvents = filteredData;
+      document.getElementById('modalDateTitle').innerText = title;
+      document.getElementById('detailsModal').classList.remove('hidden');
+      document.getElementById('detailsModal').classList.add('flex');
+      switchTab(preSelectTab);
+    }
+
     function switchTab(building) {
       const isAri = building === 'Ari Hills';
-      document.getElementById('tabAri').className = isAri ? "flex-1 py-6 border-b-8 border-blue-600 text-blue-600 bg-blue-50/30 transition-all font-black" : "flex-1 py-6 border-b-8 border-transparent text-slate-400 hover:bg-slate-100 transition-all font-bold";
-      document.getElementById('tabKsl').className = !isAri ? "flex-1 py-6 border-b-8 border-orange-500 text-orange-600 bg-orange-50/30 transition-all font-black" : "flex-1 py-6 border-b-8 border-transparent text-slate-400 hover:bg-slate-100 transition-all font-bold";
+      document.getElementById('tabAri').className = isAri 
+        ? "flex-1 py-5 border-b-[6px] border-blue-600 dark:border-orange-500 text-blue-700 dark:text-orange-500 bg-blue-50/50 dark:bg-orange-900/10 transition-all font-black tracking-widest" 
+        : "flex-1 py-5 border-b-[6px] border-transparent text-slate-400 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all font-bold tracking-widest";
+      document.getElementById('tabKsl').className = !isAri 
+        ? "flex-1 py-5 border-b-[6px] border-orange-600 dark:border-orange-500 text-orange-600 dark:text-orange-500 bg-orange-50/50 dark:bg-orange-900/10 transition-all font-black tracking-widest" 
+        : "flex-1 py-5 border-b-[6px] border-transparent text-slate-400 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all font-bold tracking-widest";
+      
       const content = document.getElementById('modalContent');
       const events = currentModalEvents.filter(e => e.building === building).sort((a,b) => a.start.localeCompare(b.start));
-      if(events.length === 0) { content.innerHTML = `<div class="col-span-full text-center py-20 opacity-20 text-2xl font-black italic">🍃 NO DATA RECORDED</div>`; return; }
+      
+      if(events.length === 0) { 
+          content.innerHTML = `<div class="flex flex-col items-center justify-center py-20 opacity-30"><span class="text-6xl mb-4">🍃</span><p class="font-black text-xl">ไม่มีรายการข้อมูล</p></div>`; return; 
+      }
 
       content.innerHTML = events.map(p => {
         const hasImg = p.image && p.image.startsWith("http");
         return `
-        <div class="bg-white dark:bg-slate-800 p-8 rounded-[3rem] shadow-sm border border-slate-100 dark:border-white/5 relative group hover:shadow-xl transition-all">
-          <div class="flex justify-between items-center mb-6">
-            <span class="bg-slate-100 dark:bg-slate-900 dark:text-white px-5 py-2.5 rounded-2xl font-black italic text-lg tracking-tighter">⏰ ${p.start} - ${p.end}</span>
-            <span class="text-[10px] font-black uppercase text-blue-500 border-2 border-blue-100 px-2 py-1 rounded-md">${p.status}</span>
+        <div class="bg-white dark:bg-white/5 backdrop-blur-xl p-6 rounded-[1.5rem] shadow-sm border border-slate-200 dark:border-white/10 relative hover:shadow-xl transition-all group">
+          <div class="flex justify-between items-center mb-4">
+            <span class="bg-slate-100 dark:bg-black text-slate-800 dark:text-orange-500 px-4 py-2 rounded-xl font-black text-base flex items-center gap-2 border dark:border-white/10 shadow-inner">⏰ ${p.start} - ${p.end}</span>
+            <span class="text-[10px] font-black uppercase text-blue-600 dark:text-orange-400 border-2 border-blue-200 dark:border-orange-500/30 px-3 py-1 rounded-lg">${p.status || 'Active'}</span>
           </div>
-          <h4 class="font-black text-2xl text-slate-900 dark:text-white mb-4 leading-tight">${p.title}</h4>
-          <p class="text-slate-500 dark:text-slate-400 font-bold text-sm mb-8 leading-relaxed">${p.layout}</p>
-          <div class="grid grid-cols-2 gap-3">
-            ${hasImg ? `<a href="${p.image}" target="_blank" class="bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 text-center py-4 rounded-2xl font-black text-xs">VIEW PLAN</a>` : ''}
-            <button onclick="editBooking('${p.id}')" class="bg-yellow-50 dark:bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 py-4 rounded-2xl font-black text-xs">EDIT</button>
-            <button onclick="deleteBooking('${p.id}')" class="bg-red-50 dark:bg-red-400/10 text-red-600 dark:text-red-400 py-4 rounded-2xl font-black text-xs">DELETE</button>
-            <div id="maid-btn-area-${p.id}" class="col-span-full mt-2">
+          <h4 class="font-black text-2xl text-slate-900 dark:text-white mb-3 leading-tight group-hover:text-blue-600 dark:group-hover:text-orange-400 transition-colors">${p.title}</h4>
+          <p class="text-slate-600 dark:text-slate-300 text-base font-medium mb-5 bg-slate-50/80 dark:bg-black/40 p-4 rounded-xl border border-slate-100 dark:border-white/5 leading-relaxed">${p.layout}</p>
+          
+          <div class="flex items-center gap-3 text-sm font-bold text-slate-500 dark:text-slate-400 mb-6 bg-slate-50 dark:bg-black/60 px-4 py-3 rounded-xl inline-flex border border-slate-100 dark:border-white/5">
+              <span>👤 ${p.contact}</span> <span class="text-slate-300 dark:text-slate-700">|</span> <span>📞 ${p.phone}</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3">
+            ${hasImg ? `<a href="${p.image}" target="_blank" class="flex items-center justify-center gap-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 py-3 rounded-xl font-black text-sm hover:bg-indigo-100 transition-colors">🖼️ ดูแปลน</a>` : '<div class="hidden"></div>'}
+            <button onclick="editBooking('${p.id}')" class="flex items-center justify-center gap-1 bg-yellow-50 dark:bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 py-3 rounded-xl font-black text-sm hover:bg-yellow-100 transition-colors">✏️ แก้ไข</button>
+            <button onclick="deleteBooking('${p.id}')" class="flex items-center justify-center gap-1 bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 py-3 rounded-xl font-black text-sm hover:bg-red-100 transition-colors">🗑️ ยกเลิก</button>
+            
+            <div id="maid-btn-area-${p.id}" class="${hasImg ? 'col-span-full' : 'col-span-2'} mt-2">
               ${p.maidStatus === 'Notified' 
-                ? `<span class="w-full flex items-center justify-center bg-emerald-100 text-emerald-700 py-4 rounded-2xl font-black text-xs uppercase">Notified ✅</span>`
-                : `<button onclick="notifyMaid('${p.id}')" class="w-full bg-slate-900 dark:bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Notify Maid 🧹</button>`}
+                ? `<span class="w-full flex items-center justify-center gap-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 py-4 rounded-xl font-black text-sm shadow-inner">✅ แจ้งจัดพื้นที่แล้ว</span>`
+                : `<button onclick="notifyMaid('${p.id}')" class="w-full flex items-center justify-center gap-2 bg-slate-800 dark:bg-orange-600 text-white py-4 rounded-xl font-black text-sm hover:bg-slate-700 hover:scale-[1.02] transition-all shadow-md">🛋️ แจ้งจัดพื้นที่</button>`}
             </div>
           </div>
         </div>`;
@@ -303,63 +470,114 @@
     }
 
     function renderCharts() {
-      const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
-      const isDark = document.body.classList.contains('dark');
-      const textColor = isDark ? '#94a3b8' : '#64748b';
-      const thisMonthEvents = globalBookingData.filter(d => {
-        let iso = parseThaiDate(d.date); if(!iso) return false;
-        let eventDate = new Date(iso); return eventDate.getMonth() === m && eventDate.getFullYear() === y;
-      });
-      const ariMonth = thisMonthEvents.filter(d => d.building === 'Ari Hills').length;
-      const kslMonth = thisMonthEvents.filter(d => d.building === 'KSL Tower').length;
-      let dateCounts = {}; let thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(now.getDate() - 30);
-      globalBookingData.forEach(d => {
-        let iso = parseThaiDate(d.date); if(!iso) return;
-        let eventDate = new Date(iso); if(eventDate >= thirtyDaysAgo && eventDate <= now) {
-            let dateKey = eventDate.toISOString().split('T')[0]; dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1;
-        }
-      });
-      document.getElementById('statMonthTotal').innerText = thisMonthEvents.length;
-      document.getElementById('statMonthAri').innerText = ariMonth;
-      document.getElementById('statMonthKsl').innerText = kslMonth;
-      document.getElementById('stat30Days').innerText = thisMonthEvents.length;
+        if (!document.getElementById('smartDonutChart') || globalBookingData.length === 0) return;
+        
+        const now = new Date(); const m = now.getMonth(); const y = now.getFullYear();
+        const isDark = document.body.classList.contains('dark');
+        const textColor = isDark ? '#f8fafc' : '#475569'; 
 
-      if(donutChartInstance) donutChartInstance.destroy();
-      donutChartInstance = new Chart(document.getElementById('smartDonutChart').getContext('2d'), {
-        type: 'doughnut', data: { labels: ['Ari Hills', 'KSL Tower'], datasets: [{ data: [ariMonth, kslMonth], backgroundColor: ['#3b82f6', '#f97316'], borderWeight: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '85%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Prompt', weight: 'bold' } } } } }
-      });
+        const thisMonthEvents = globalBookingData.filter(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return false;
+            let eventDate = new Date(iso); return eventDate.getMonth() === m && eventDate.getFullYear() === y;
+        });
 
-      if(barChartInstance) barChartInstance.destroy();
-      let sortedDates = Object.keys(dateCounts).sort();
-      barChartInstance = new Chart(document.getElementById('smartBarChart').getContext('2d'), {
-        type: 'line', data: { labels: sortedDates.map(d => { let date = new Date(d); return date.getDate() + "/" + (date.getMonth()+1); }), datasets: [{ label: 'Booking Volume', data: sortedDates.map(d => dateCounts[d]), borderColor: '#3b82f6', borderWidth: 6, tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)', pointRadius: 5, pointBackgroundColor: '#3b82f6' }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: textColor } } } }
-      });
+        const ariMonth = thisMonthEvents.filter(d => d.building === 'Ari Hills').length;
+        const kslMonth = thisMonthEvents.filter(d => d.building === 'KSL Tower').length;
+        
+        let dateCounts = {}; 
+        let thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(now.getDate() - 30);
+        globalBookingData.forEach(d => {
+            let iso = parseThaiDate(d.date); if(!iso) return;
+            let eventDate = new Date(iso); 
+            if(eventDate >= thirtyDaysAgo && eventDate <= now) {
+                dateCounts[iso] = (dateCounts[iso] || 0) + 1;
+            }
+        });
+
+        document.getElementById('statMonthTotal').innerText = thisMonthEvents.length;
+        document.getElementById('statMonthAri').innerText = ariMonth;
+        document.getElementById('statMonthKsl').innerText = kslMonth;
+        document.getElementById('stat30Days').innerText = Object.values(dateCounts).reduce((a, b) => a + b, 0);
+
+        if(donutChartInstance) donutChartInstance.destroy();
+        donutChartInstance = new Chart(document.getElementById('smartDonutChart').getContext('2d'), {
+            type: 'doughnut', 
+            data: { 
+                labels: ['Ari Hills', 'KSL Tower'], 
+                datasets: [{ 
+                    data: [ariMonth, kslMonth], 
+                    backgroundColor: isDark ? ['#3b82f6', '#ea580c'] : ['#3b82f6', '#f97316'], 
+                    borderWidth: isDark ? 2 : 0, borderColor: isDark ? '#1a1a1a' : '#fff'
+                }] 
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false, cutout: '75%', 
+                plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Prompt', weight: 'bold', size: 14 } } } },
+                onHover: (event, chartElement) => { event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default'; },
+                onClick: (e, activeEls) => {
+                    if (activeEls.length > 0) {
+                        const dataIndex = activeEls[0].index;
+                        const building = donutChartInstance.data.labels[dataIndex];
+                        showAnalyticsDetails(building); 
+                    }
+                }
+            }
+        });
+
+        if(barChartInstance) barChartInstance.destroy();
+        let sortedDatesISO = Object.keys(dateCounts).sort();
+        barChartInstance = new Chart(document.getElementById('smartBarChart').getContext('2d'), {
+            type: 'line', 
+            data: { 
+                labels: sortedDatesISO.map(d => { let date = new Date(d); return date.getDate() + "/" + (date.getMonth()+1); }), 
+                customDates: sortedDatesISO, 
+                datasets: [{ 
+                    label: 'จำนวนการจอง (รายการ)', data: sortedDatesISO.map(d => dateCounts[d]), 
+                    borderColor: isDark ? '#f97316' : '#3b82f6', borderWidth: 5, tension: 0.4, fill: true, 
+                    backgroundColor: isDark ? 'rgba(249, 115, 22, 0.1)' : 'rgba(59, 130, 246, 0.05)', 
+                    pointRadius: 6, pointBackgroundColor: isDark ? '#ea580c' : '#3b82f6', pointHoverRadius: 9
+                }] 
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+                        ticks: { stepSize: 1, color: textColor, font: {family: 'Prompt', weight: 'bold'} }
+                    }, 
+                    x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Prompt', weight: 'bold'} } } 
+                },
+                onHover: (event, chartElement) => { event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default'; },
+                onClick: (e, activeEls) => {
+                    if (activeEls.length > 0) {
+                        const dataIndex = activeEls[0].index;
+                        const fullDateISO = barChartInstance.data.customDates[dataIndex];
+                        showAnalyticsDetails('Date', fullDateISO);
+                    }
+                }
+            }
+        });
     }
 
-    function notifyMaid(id) {
-      const area = document.getElementById(`maid-btn-area-${id}`);
-      area.innerHTML = `<button disabled class="w-full bg-slate-100 text-slate-400 py-4 rounded-2xl font-black italic uppercase">Processing...</button>`;
-      fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'notifyMaid', ticketId: id }) })
-      .then(res => res.json()).then(res => { if(res.success) fetchData(false); });
-    }
+    function closeModal() { document.getElementById('detailsModal').classList.add('hidden'); document.getElementById('detailsModal').classList.remove('flex'); }
 
     function handleFormSubmit(event) {
-      event.preventDefault(); document.getElementById('submitBtn').innerHTML = "⏳ Processing Request..."; document.getElementById('submitBtn').disabled = true;
-      const file = document.getElementById('fileUpload').files[0];
-      const formObject = { action: window.currentAction, ticketId: document.getElementById('ticketId').value, building: document.getElementById('building').value, bookingDate: document.getElementById('bookingDate').value, startTime: document.getElementById('startTime').value, endTime: document.getElementById('endTime').value, eventName: document.getElementById('eventName').value, layout: document.getElementById('layout').value, contactName: document.getElementById('contactName').value, contactPhone: document.getElementById('contactPhone').value, oldImage: window.currentOldImage };
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) { formObject.fileData = e.target.result; formObject.fileName = file.name; sendToBackend(formObject); };
-        reader.readAsDataURL(file);
-      } else { sendToBackend(formObject); }
+        event.preventDefault(); document.getElementById('submitBtn').innerHTML = "⏳ กำลังดำเนินการ..."; document.getElementById('submitBtn').disabled = true;
+        let equipmentChecks = document.querySelectorAll('.equipment-cb:checked');
+        let equipText = Array.from(equipmentChecks).map(cb => cb.value).join(', ');
+        let baseLayout = document.getElementById('layout').value;
+        let finalLayout = equipText ? baseLayout + "\n\n[อุปกรณ์: " + equipText + "]" : baseLayout;
+        const file = document.getElementById('fileUpload').files[0];
+        const formObject = { action: window.currentAction, ticketId: document.getElementById('ticketId').value, building: document.getElementById('building').value, bookingDate: document.getElementById('bookingDate').value, startTime: document.getElementById('startTime').value, endTime: document.getElementById('endTime').value, eventName: document.getElementById('eventName').value, layout: finalLayout, contactName: document.getElementById('contactName').value, contactPhone: document.getElementById('contactPhone').value, oldImage: window.currentOldImage };
+        if (file) { const reader = new FileReader(); reader.onload = function(e) { formObject.fileData = e.target.result; formObject.fileName = file.name; sendToBackend(formObject); }; reader.readAsDataURL(file); } else { sendToBackend(formObject); }
     }
-
+    
     function sendToBackend(formObject) {
       fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(formObject) }).then(res => res.json()).then(res => {
-        document.getElementById('submitBtn').disabled = false; document.getElementById('submitBtn').innerHTML = "Confirm Booking 🚀";
-        if(res.success) { resetFormToCreate(); fetchData(false); switchView('calendar'); Swal.fire('Success', 'บันทึกสำเร็จ!', 'success'); } else { Swal.fire('Error', res.message, 'error'); }
+        document.getElementById('submitBtn').disabled = false; document.getElementById('submitBtn').innerHTML = "ยืนยันการจอง 🚀";
+        if(res.success) { resetFormToCreate(); fetchData(false); switchView('calendar'); Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', confirmButtonColor: '#f97316' }); } 
+        else { Swal.fire('Error', res.message, 'error'); }
       });
     }
 
@@ -367,35 +585,41 @@
       if(!str) return null; const m = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
       try { let p = str.trim().split(' '); return (parseInt(p[2])-543) + "-" + (m.indexOf(p[1])+1).toString().padStart(2,'0') + "-" + p[0].padStart(2,'0'); } catch(e) { return null; }
     }
-    function closeModal() { document.getElementById('detailsModal').classList.add('hidden'); }
+    
+    function resetFormToCreate() { document.getElementById('bookingForm').reset(); document.getElementById('ticketId').readOnly = false; window.currentAction = 'create'; document.getElementById('submitBtn').innerHTML = "ยืนยันการจอง 🚀"; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('fileNameDisplay').classList.add('hidden'); document.querySelectorAll('.equipment-cb').forEach(cb => cb.checked = false); }
+    
     function editBooking(id) {
-      const b = globalBookingData.find(x => x.id === id); if(!b) return; closeModal();
-      document.getElementById('ticketId').value = b.id; document.getElementById('ticketId').readOnly = true;
-      document.getElementById('building').value = b.building; document.getElementById('bookingDate').value = b.date; document.getElementById('startTime').value = b.start; document.getElementById('endTime').value = b.end; document.getElementById('eventName').value = b.title; document.getElementById('layout').value = b.layout; document.getElementById('contactName').value = b.contact; document.getElementById('contactPhone').value = b.phone;
-      window.currentAction = 'update'; window.currentOldImage = b.image;
-      document.getElementById('submitBtn').innerText = "SAVE CHANGES"; document.getElementById('cancelEditBtn').classList.remove('hidden'); switchView('form');
+        const b = globalBookingData.find(x => x.id === id); if(!b) return; closeModal();
+        document.getElementById('ticketId').value = b.id; document.getElementById('ticketId').readOnly = true; document.getElementById('building').value = b.building; document.getElementById('bookingDate').value = b.date; document.getElementById('startTime').value = b.start; document.getElementById('endTime').value = b.end; document.getElementById('eventName').value = b.title; 
+        document.getElementById('layout').value = b.layout.replace(/\n\n\[อุปกรณ์: .*\]/g, ''); 
+        document.getElementById('contactName').value = b.contact; document.getElementById('contactPhone').value = b.phone; window.currentAction = 'update'; window.currentOldImage = b.image; document.getElementById('submitBtn').innerHTML = "บันทึกการแก้ไข"; document.getElementById('cancelEditBtn').classList.remove('hidden'); document.querySelectorAll('.equipment-cb').forEach(cb => cb.checked = false); switchView('form');
     }
-    function deleteBooking(id) {
-      Swal.fire({ title: 'Cancel Booking?', icon: 'warning', showCancelButton: true }).then((result) => {
-        if (result.isConfirmed) { fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', ticketId: id }) }).then(res => res.json()).then(res => { if(res.success) { fetchData(); closeModal(); } }); }
-      });
-    }
-    function resetFormToCreate() { document.getElementById('bookingForm').reset(); document.getElementById('ticketId').readOnly = false; window.currentAction = 'create'; document.getElementById('submitBtn').innerText = "Confirm Booking 🚀"; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('fileNameDisplay').classList.add('hidden'); }
+    
+    function deleteBooking(id) { Swal.fire({ title: 'ยกเลิกการจอง?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'ใช่' }).then((r) => { if(r.isConfirmed) { fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', ticketId: id }) }).then(res => res.json()).then(res => { if(res.success) { fetchData(); closeModal(); } }); } }); }
+    
+    function notifyMaid(id) { const area = document.getElementById(`maid-btn-area-${id}`); area.innerHTML = `<button disabled class="w-full bg-slate-100 dark:bg-white/5 text-slate-400 py-4 rounded-xl font-black text-sm">กำลังดำเนินการ...</button>`; fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'notifyMaid', ticketId: id }) }).then(res => res.json()).then(res => { if(res.success) fetchData(false); }); }
+    
     function showFileName(input) { if(input.files[0]) { document.getElementById('fileNameText').innerText = input.files[0].name; document.getElementById('fileNameDisplay').classList.remove('hidden'); } }
 
     document.addEventListener('DOMContentLoaded', () => {
+      Swal.fire({ title: 'กำลังเชื่อมต่อระบบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+      
       flatpickr("#bookingDate", { locale: "th", dateFormat: "d F Y", onReady: function(s, ds, i) { const ms = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']; i.formatDate = function(d, f) { return d.getDate() + " " + ms[d.getMonth()] + " " + (d.getFullYear() + 543); }; } });
       flatpickr("#startTime, #endTime", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
+      
       calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth', locale: 'th', height: 'auto',
+        initialView: 'dayGridMonth', locale: 'th', contentHeight: 'auto', aspectRatio: 1.5,
         headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
         eventClick: (info) => {
-          document.getElementById('modalDateTitle').innerText = info.event.extendedProps.date;
+          document.getElementById('modalDateTitle').innerText = "📅 ข้อมูลวันที่: " + info.event.extendedProps.date;
           currentModalEvents = globalBookingData.filter(d => d.date === info.event.extendedProps.date);
-          document.getElementById('detailsModal').classList.remove('hidden'); switchTab(info.event.extendedProps.building);
+          document.getElementById('detailsModal').classList.remove('hidden'); 
+          document.getElementById('detailsModal').classList.add('flex');
+          switchTab(info.event.extendedProps.building);
         }
       });
-      calendar.render(); fetchData(true); setInterval(() => fetchData(false), 30000);
+      calendar.render(); 
+      fetchData(true); 
     });
   </script>
 </body>
